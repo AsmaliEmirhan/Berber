@@ -1,0 +1,423 @@
+/* ============================================================
+   Berber Randevu Sistemi — Auth Sayfası Stilleri
+   Glassmorphism + Dark Mode
+   ============================================================ */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg-dark:        #0a0a0f;
+    --bg-card:        rgba(255, 255, 255, 0.06);
+    --bg-card-hover:  rgba(255, 255, 255, 0.09);
+    --border:         rgba(255, 255, 255, 0.12);
+    --border-focus:   rgba(139, 92, 246, 0.7);
+    --text-primary:   #f1f1f5;
+    --text-secondary: #9ca3af;
+    --text-muted:     #6b7280;
+    --accent:         #8b5cf6;
+    --accent-2:       #6366f1;
+    --accent-glow:    rgba(139, 92, 246, 0.35);
+    --gold:           #f59e0b;
+    --gold-glow:      rgba(245, 158, 11, 0.3);
+    --success:        #10b981;
+    --error:          #ef4444;
+    --radius-sm:      8px;
+    --radius-md:      14px;
+    --radius-lg:      24px;
+    --transition:     0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---- Background ---- */
+body {
+    min-height: 100vh;
+    background: var(--bg-dark);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Animated gradient orbs */
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    animation: floatOrb 8s ease-in-out infinite alternate;
+}
+body::before {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%);
+    top: -150px; left: -150px;
+}
+body::after {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%);
+    bottom: -120px; right: -100px;
+    animation-delay: -4s;
+}
+@keyframes floatOrb {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(30px, 20px) scale(1.1); }
+}
+
+/* ---- Card ---- */
+.auth-wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;
+}
+
+.auth-logo {
+    text-align: center;
+    margin-bottom: 28px;
+}
+.auth-logo .logo-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px; height: 60px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    font-size: 28px;
+    margin-bottom: 12px;
+    box-shadow: 0 8px 30px var(--accent-glow);
+}
+.auth-logo h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.auth-logo p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.auth-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 36px 36px 32px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow:
+        0 4px 6px rgba(0,0,0,0.3),
+        0 20px 60px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+/* ---- Role Tabs ---- */
+.role-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: rgba(0,0,0,0.3);
+    border-radius: var(--radius-md);
+    padding: 5px;
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+}
+
+.role-tab {
+    position: relative;
+    padding: 12px 8px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    z-index: 1;
+    font-family: inherit;
+}
+.role-tab .tab-icon { font-size: 1rem; }
+
+.role-tab.active {
+    color: var(--text-primary);
+}
+
+/* Sliding indicator */
+.tabs-slider {
+    position: absolute;
+    top: 5px; left: 5px;
+    width: calc(50% - 5px);
+    height: calc(100% - 10px);
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 4px 15px var(--accent-glow);
+    transition: transform var(--transition);
+    pointer-events: none;
+    z-index: 0;
+}
+.tabs-slider.berber { transform: translateX(calc(100% + 8px)); }
+
+/* ---- Mode Switch (Giriş / Kayıt) ---- */
+.mode-switch {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+}
+.mode-btn {
+    flex: 1;
+    padding: 9px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+    font-family: inherit;
+    letter-spacing: 0.3px;
+}
+.mode-btn.active {
+    background: rgba(139,92,246,0.15);
+    border-color: var(--border-focus);
+    color: var(--text-primary);
+}
+.mode-btn:hover:not(.active) {
+    background: rgba(255,255,255,0.04);
+    color: var(--text-secondary);
+}
+
+/* ---- Form ---- */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.field label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.input-wrap {
+    position: relative;
+}
+.input-wrap .input-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    pointer-events: none;
+    transition: color var(--transition);
+}
+
+input, select {
+    width: 100%;
+    padding: 12px 14px 12px 38px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+    transition: all var(--transition);
+    appearance: none;
+    -webkit-appearance: none;
+}
+select {
+    padding-right: 36px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%236b7280' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+}
+select option {
+    background: #1a1a2e;
+    color: var(--text-primary);
+}
+
+input:focus, select:focus {
+    border-color: var(--border-focus);
+    background: rgba(139,92,246,0.06);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+}
+input:focus + .input-icon,
+.input-wrap:focus-within .input-icon {
+    color: var(--accent);
+}
+input::placeholder { color: var(--text-muted); }
+
+/* Password toggle */
+.toggle-pass {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    transition: color var(--transition);
+}
+.toggle-pass:hover { color: var(--accent); }
+/* when toggle present, add right padding to input */
+.has-toggle input { padding-right: 40px; }
+
+/* ---- Submit Button ---- */
+.btn-submit {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: all var(--transition);
+    box-shadow: 0 4px 20px var(--accent-glow);
+    margin-top: 4px;
+}
+.btn-submit::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background var(--transition);
+}
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 28px var(--accent-glow); }
+.btn-submit:hover::before { background: rgba(255,255,255,0.08); }
+.btn-submit:active { transform: translateY(0); }
+.btn-submit:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+/* Spinner inside button */
+.btn-submit .spinner {
+    display: none;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+.btn-submit.loading .spinner { display: inline-block; }
+.btn-submit.loading .btn-text { opacity: 0.8; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- Alert ---- */
+.alert {
+    display: none;
+    padding: 13px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+    animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.alert.error   { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #fca5a5; }
+.alert.success { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.3); color: #6ee7b7; }
+.alert.show { display: flex; align-items: center; gap: 10px; }
+
+/* ---- Divider ---- */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    margin: 4px 0;
+}
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* ---- Plus Badge (Berber) ---- */
+.plus-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--gold), #d97706);
+    color: #fff;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px var(--gold-glow);
+    vertical-align: middle;
+    margin-left: 6px;
+}
+
+/* ---- Forgot / Links ---- */
+.form-footer {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+.form-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+.form-footer a:hover { text-decoration: underline; }
+
+/* ---- Hidden utility ---- */
+.hidden { display: none !important; }
+
+/* ---- Responsive ---- */
+@media (max-width: 520px) {
+    .auth-card { padding: 28px 20px 24px; }
+    .form-row  { grid-template-columns: 1fr; }
+}

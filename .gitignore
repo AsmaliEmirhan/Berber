@@ -1,0 +1,4 @@
+vendor/
+cron_log/*.log
+config/mail.php
+.env
