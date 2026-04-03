@@ -2,6 +2,7 @@
 // ============================================================
 //  Veritabanı Bağlantısı - PDO
 // ============================================================
+date_default_timezone_set('Europe/Istanbul');
 
 
 define('DB_HOST', 'localhost');
