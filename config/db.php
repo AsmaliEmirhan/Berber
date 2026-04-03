@@ -28,9 +28,8 @@ function getPDO(): PDO {
         try {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
-            // Üretimde bu hatayı loglayın, kullanıcıya göstermeyin
-            http_response_code(500);
-            exit(json_encode(['success' => false, 'message' => 'Veritabanı bağlantı hatası.']));
+            http_response_code(200);
+            exit(json_encode(['success' => false, 'message' => 'DB Hatası: ' . $e->getMessage()]));
         }
     }
 
