@@ -3,10 +3,10 @@
 //  Veritabanı Bağlantısı - PDO
 // ============================================================
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'berber_db');
-define('DB_USER', 'root');   // Kendi kullanıcı adınızla değiştirin
-define('DB_PASS', '');       // Kendi şifrenizle değiştirin
+
+define('DB_NAME', 'u225191980_berber'); // Hostingerin verdigi isim
+define('DB_USER', 'u225191980_emhan'); // Hostingerin verdigi kullanici
+define('DB_PASS', '117988Em117988Em!'); // Hostingerde actiginiz sifre
 define('DB_CHARSET', 'utf8mb4');
 
 function getPDO(): PDO {
