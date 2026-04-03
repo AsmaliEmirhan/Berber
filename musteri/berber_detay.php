@@ -185,7 +185,16 @@ $completedCount = (int)$stmt->fetchColumn();
 
         <!-- Step 3: Saat -->
         <div class="step-panel" id="stepPanel3">
-            <p class="booking-hint">Müsait saati seçin</p>
+            <p class="booking-hint">Müsait saati seçin (Test için dakika girebilirsiniz)</p>
+            
+            <div style="margin-bottom: 20px; padding: 15px; border: 1px dashed #6366f1; border-radius: 8px;">
+                <label style="display:block; margin-bottom:8px; font-size:13px; color:#a5b4fc;">TEST İÇİN MANUEL SAAT SEÇ (HH:MM)</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="time" id="manualTimeInput" class="booking-input" style="width: auto;">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="window.selectManualTime()">Ayarla</button>
+                </div>
+            </div>
+
             <div id="slotsContainer" class="slots-container">
                 <p class="text-muted center">Tarih ve personel seçtikten sonra saatler yüklenir.</p>
             </div>

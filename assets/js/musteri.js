@@ -199,6 +199,33 @@
     }
 
     /* ============================================================
+       selectManualTime — Manuel saat girişini uygula
+    ============================================================ */
+    window.selectManualTime = function () {
+        const input = document.getElementById('manualTimeInput');
+        if (!input || !input.value) {
+            showToast('error', 'Lütfen geçerli bir saat girin.');
+            return;
+        }
+
+        // HH:MM formatı kontrolü
+        if (!/^\d{2}:\d{2}$/.test(input.value)) {
+            showToast('error', 'Saat formatı HH:MM olmalı.');
+            return;
+        }
+
+        // Önceki slot seçimini kaldır
+        document.querySelectorAll('.slot-btn.selected').forEach(b => b.classList.remove('selected'));
+
+        B.time = input.value;
+
+        const nxtBtn = document.getElementById('slotNextBtn');
+        if (nxtBtn) nxtBtn.disabled = false;
+
+        showToast('success', input.value + ' saati seçildi.');
+    };
+
+    /* ============================================================
        renderSummary — Step 4 özet kartı
     ============================================================ */
     function renderSummary() {
