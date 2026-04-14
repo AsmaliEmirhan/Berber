@@ -108,11 +108,12 @@ $shops = $stmt->fetchAll();
                 Filtrele
             </button>
             
+            <a href="?page=top10" class="bg-[#fbbf24] text-black px-6 py-3 rounded-xl border-2 border-black font-bold font-headline uppercase hover:-translate-y-1 active:translate-y-0 transition-transform flex items-center gap-2 drop-shadow-[2px_2px_0_#000]">
+                <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span> En İyiler (TOP 10)
+            </a>
+            
             <?php if ($filterCity || $filterDistrict || $search): ?>
-                <a href="?page=top10&city=<?= $filterCity ?>&district=<?= $filterDistrict ?>&q=<?= urlencode($search) ?>" class="bg-[#fbbf24] text-black px-6 py-3 rounded-xl border-2 border-black font-bold font-headline uppercase hover:-translate-y-1 active:translate-y-0 transition-transform flex items-center gap-2 drop-shadow-[2px_2px_0_#000]">
-                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span> En İyiler
-                </a>
-                <a href="?page=kesfet" class="text-sm font-bold underline px-4 hover:text-error">TEMİZLE</a>
+                <a href="?page=kesfet" class="text-sm font-bold underline px-4 hover:text-error whitespace-nowrap">TEMİZLE</a>
             <?php endif; ?>
         </form>
     </section>

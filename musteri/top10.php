@@ -1,7 +1,16 @@
 <?php
+$cities = $pdo->query('SELECT id, name FROM cities ORDER BY name')->fetchAll();
+
 $filterCity = isset($_GET['city']) ? (int)$_GET['city'] : 0;
 $filterDistrict = isset($_GET['district']) ? (int)$_GET['district'] : 0;
-$search = trim($_GET['q'] ?? '');
+
+$districts = [];
+if ($filterCity) {
+    $stmt = $pdo->prepare('SELECT id, name FROM districts WHERE city_id = ? ORDER BY name');
+    $stmt->execute([$filterCity]);
+    $districts = $stmt->fetchAll();
+}
+
 
 $top10Sql = "
     SELECT s.*, 
@@ -24,12 +33,7 @@ if ($filterDistrict) {
     $top10Sql .= " AND s.district_id = ? ";
     $params[] = $filterDistrict;
 }
-if ($search) {
-    $top10Sql .= ' AND (s.shop_name LIKE ? OR u.full_name LIKE ?)';
-    $like = '%' . $search . '%';
-    $params[] = $like;
-    $params[] = $like;
-}
+
 
 $top10Sql .= " GROUP BY s.id HAVING review_count > 0 ORDER BY avg_rating DESC, review_count DESC, s.created_at DESC LIMIT 50 "; 
 
@@ -39,18 +43,41 @@ $topShops = $stmt->fetchAll();
 
 $title = "";
 if ($filterCity) {
-    $title = "Şehrin En İyi Berberleri";
-} else if ($search) {
-    $title = "Arama Sonucundaki En İyiler";
+    $title = "Şehrin En İyi 10'u";
 } else {
-    $title = "Türkiye Geneli En İyiler";
+    $title = "Türkiye Geneli Top 10";
 }
 ?>
 <div class="max-w-screen-xl mx-auto px-6 py-12 relative">
-    <div class="mb-12">
-        <a href="?page=kesfet<?= $filterCity ? '&city='.$filterCity : '' ?><?= $filterDistrict ? '&district='.$filterDistrict : '' ?>&q=<?= urlencode($search) ?>" class="inline-flex items-center gap-2 font-bold uppercase text-sm border-b-2 border-black pb-0.5 hover:text-error hover:border-error transition-colors">
-            <span class="material-symbols-outlined text-lg">arrow_back</span> Geri Dön
+    <div class="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <a href="?page=kesfet" class="inline-flex items-center gap-2 font-bold uppercase text-sm border-b-2 border-black pb-0.5 hover:text-error hover:border-error transition-colors">
+            <span class="material-symbols-outlined text-lg">arrow_back</span> Keşfet'e Dön
         </a>
+        
+        <!-- TOP 10 Filtreleme Formu -->
+        <form method="GET" action="musteri_paneli.php" class="flex flex-wrap gap-4 items-center bg-surface-container-highest p-4 rounded-xl border-2 border-black w-full md:w-auto">
+            <input type="hidden" name="page" value="top10">
+            
+            <select name="city" id="top10CitySelect" onchange="this.form.district.value=''; this.form.submit()" class="bg-white border-2 border-black rounded-lg px-4 py-2 font-headline font-bold focus:outline-none focus:border-secondary transition-colors appearance-none pr-8">
+                <option value="">TÜRKİYE GENELİ</option>
+                <?php foreach ($cities as $c): ?>
+                <option value="<?= $c['id'] ?>" <?= $filterCity == $c['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars(mb_strtoupper($c['name'])) ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
+            
+            <?php if ($filterCity): ?>
+            <select name="district" onchange="this.form.submit()" class="bg-white border-2 border-black rounded-lg px-4 py-2 font-headline font-bold focus:outline-none focus:border-secondary transition-colors appearance-none pr-8">
+                <option value="">TÜM İLÇELER</option>
+                <?php foreach ($districts as $d): ?>
+                <option value="<?= $d['id'] ?>" <?= $filterDistrict == $d['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars(mb_strtoupper($d['name'])) ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
+            <?php endif; ?>
+        </form>
     </div>
 
     <header class="mb-20 text-center relative">
