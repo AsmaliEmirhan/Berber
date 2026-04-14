@@ -13,7 +13,7 @@ $stmt = $pdo->prepare('SELECT u.*, d.name AS district_name FROM users u LEFT JOI
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch();
 
-$allowedPages = ['kesfet', 'berber_detay', 'randevularim'];
+$allowedPages = ['kesfet', 'berber_detay', 'randevularim', 'top10'];
 $page = in_array($_GET['page'] ?? '', $allowedPages) ? $_GET['page'] : 'kesfet';
 
 $activeNav = ($page === 'berber_detay') ? 'kesfet' : $page;

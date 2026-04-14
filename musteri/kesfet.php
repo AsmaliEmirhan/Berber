@@ -57,31 +57,6 @@ if ($sort === 'top_rated') {
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $shops = $stmt->fetchAll();
-
-// Top 10 Puanlı Berberler
-$top10Sql = "
-    SELECT s.*, 
-           u.full_name as owner_name, 
-           d.name as district_name,
-           AVG(r.rating) as avg_rating,
-           COUNT(DISTINCT r.id) as review_count
-    FROM shops s
-    JOIN users u ON s.owner_id = u.id
-    LEFT JOIN districts d ON s.district_id = d.id
-    LEFT JOIN reviews r ON r.shop_id = s.id
-    WHERE 1=1 ";
-
-$top10Params = [];
-if ($filterCity) {
-    $top10Sql .= " AND s.city_id = ? ";
-    $top10Params[] = $filterCity;
-}
-// En az 1 yorumu olanlar içinden sırala
-$top10Sql .= " GROUP BY s.id HAVING review_count > 0 ORDER BY avg_rating DESC, s.created_at DESC LIMIT 10 ";
-
-$stmt = $pdo->prepare($top10Sql);
-$stmt->execute($top10Params);
-$top10Shops = $stmt->fetchAll();
 ?>
 
 <div class="max-w-screen-xl mx-auto px-6 py-8 relative">
@@ -134,39 +109,13 @@ $top10Shops = $stmt->fetchAll();
             </button>
             
             <?php if ($filterCity || $filterDistrict || $search): ?>
-            <a href="?page=kesfet" class="text-sm font-bold underline px-4 hover:text-secondary">TEMİZLE</a>
+                <a href="?page=top10&city=<?= $filterCity ?>&district=<?= $filterDistrict ?>&q=<?= urlencode($search) ?>" class="bg-[#fbbf24] text-black px-6 py-3 rounded-xl border-2 border-black font-bold font-headline uppercase hover:-translate-y-1 active:translate-y-0 transition-transform flex items-center gap-2 drop-shadow-[2px_2px_0_#000]">
+                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span> En İyiler
+                </a>
+                <a href="?page=kesfet" class="text-sm font-bold underline px-4 hover:text-error">TEMİZLE</a>
             <?php endif; ?>
         </form>
     </section>
-
-    <!-- TOP 10 Vitrini -->
-    <?php if (!empty($top10Shops)): ?>
-    <section class="mb-16">
-        <h2 class="font-headline font-black text-3xl italic mb-6 border-b-4 border-black inline-block text-secondary drop-shadow-[2px_2px_0_#000]">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">workspace_premium</span> 
-            <?= $filterCity ? 'ŞEHRİN EN İYİLERİ' : 'TÜRKİYE GENELİ EN İYİLER' ?> (TOP 10)
-        </h2>
-        <div class="flex overflow-x-auto gap-6 pb-6 pt-2 snap-x">
-            <?php foreach($top10Shops as $idx => $ts): ?>
-            <a href="?page=berber_detay&shop_id=<?= $ts['id'] ?>" class="snap-start shrink-0 w-64 bg-surface-container-highest border-4 border-black rounded-xl p-4 hover:-translate-y-2 transition-transform shadow-[6px_6px_0px_#000] relative group">
-                <div class="absolute -top-4 -left-4 w-10 h-10 bg-secondary rounded-full border-2 border-black flex items-center justify-center font-black text-white text-xl z-20">#<?= $idx+1 ?></div>
-                <div class="w-full h-32 bg-[#e7edb4] rounded-lg border-2 border-black mb-4 flex items-center justify-center relative overflow-hidden">
-                    <span class="font-headline font-black text-6xl opacity-30"><?= mb_strtoupper(mb_substr($ts['shop_name'],0,1)) ?></span>
-                </div>
-                <h3 class="font-headline font-black text-xl line-clamp-1 truncate"><?= htmlspecialchars($ts['shop_name']) ?></h3>
-                <p class="font-body text-xs font-bold text-on-surface-variant flex gap-1 mb-2">
-                    <span class="material-symbols-outlined text-[14px]">location_on</span> <?= htmlspecialchars($ts['district_name']) ?>
-                </p>
-                <div class="flex items-center gap-1 text-[#fbbf24] drop-shadow-[1px_1px_0px_#000]">
-                    <span class="font-black text-lg"><?= number_format($ts['avg_rating'], 1) ?></span>
-                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-                    <span class="text-xs text-black ml-1 font-bold">(<?= $ts['review_count'] ?>)</span>
-                </div>
-            </a>
-            <?php endforeach; ?>
-        </div>
-    </section>
-    <?php endif; ?>
 
     <!-- Search Results Grid -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
