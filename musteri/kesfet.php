@@ -23,6 +23,7 @@ $sql    = "
     LEFT JOIN districts d ON s.district_id = d.id
     LEFT JOIN services sv ON sv.shop_id = s.id
     LEFT JOIN shop_employees se ON se.shop_id = s.id
+    LEFT JOIN users emp ON se.employee_id = emp.id
     WHERE 1=1
 ";
 $params = [];
@@ -36,8 +37,9 @@ if ($filterDistrict) {
     $params[] = $filterDistrict;
 }
 if ($search) {
-    $sql .= ' AND (s.shop_name LIKE ? OR u.full_name LIKE ?)';
+    $sql .= ' AND (s.shop_name LIKE ? OR u.full_name LIKE ? OR emp.full_name LIKE ?)';
     $like = '%' . $search . '%';
+    $params[] = $like;
     $params[] = $like;
     $params[] = $like;
 }
