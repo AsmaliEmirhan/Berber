@@ -238,7 +238,7 @@ function updateAppointment(PDO $pdo, int $userId): void {
     $status = $_POST['status'] ?? '';
 
     if (!$id) respond(false, 'Randevu ID eksik.');
-    if (!in_array($status, ['bekliyor','tamamlandi','iptal'], true)) respond(false, 'Geçersiz durum.');
+    if (!in_array($status, ['bekliyor','onaylandi','tamamlandi','iptal'], true)) respond(false, 'Geçersiz durum.');
 
     // Sahiplik kontrolü + randevu zamanı al
     $stmt = $pdo->prepare('SELECT id, appointment_time FROM appointments WHERE id = ? AND shop_id = ?');
@@ -246,17 +246,7 @@ function updateAppointment(PDO $pdo, int $userId): void {
     $appt = $stmt->fetch();
     if (!$appt) respond(false, 'Randevu bulunamadı.');
 
-    // İptal işlemi: en az 24 saat öncesinde olmalı
-    if ($status === 'iptal') {
-        $apptDt = new DateTime($appt['appointment_time'], new DateTimeZone('Europe/Istanbul'));
-        $now    = new DateTime('now', new DateTimeZone('Europe/Istanbul'));
-        $diff   = $now->diff($apptDt);
-        // $diff->invert = 1 means appointment already passed
-        $hoursLeft = ($diff->days * 24) + $diff->h + ($diff->i / 60);
-        if ($diff->invert || $hoursLeft < 24) {
-            respond(false, 'Randevuya 24 saatten az kaldığı için iptal edilemez.');
-        }
-    }
+    // İptal işlemi için patron/çalışan serbesttir (Müşteri paneli kısıtlamaya tabidir).
 
     $stmt = $pdo->prepare('UPDATE appointments SET status = ? WHERE id = ?');
     $stmt->execute([$status, $id]);

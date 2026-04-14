@@ -1149,7 +1149,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     employee_id       INT            NOT NULL,
     service_id        INT            NOT NULL,
     appointment_time  DATETIME       NOT NULL,
-    status            ENUM('bekliyor','tamamlandi','iptal') DEFAULT 'bekliyor',
+    status            ENUM('bekliyor','onaylandi','tamamlandi','iptal') DEFAULT 'bekliyor',
     reminder_sent     BOOLEAN        DEFAULT FALSE,
     price_at_that_time DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     total_duration    INT            NOT NULL DEFAULT 30,

@@ -9,16 +9,16 @@ if (!$shop):
     </div>
 </div>
 <?php else:
-    // Süresi dolmuş bekleyen randevuları otomatik tamamla
+    // Süresi dolmuş onaylı randevuları otomatik tamamla
     $pdo->prepare("
         UPDATE appointments
         SET status = 'tamamlandi'
         WHERE shop_id = ?
-          AND status = 'bekliyor'
+          AND status = 'onaylandi'
           AND DATE_ADD(appointment_time, INTERVAL total_duration MINUTE) <= NOW()
     ")->execute([$shop['id']]);
 
-    $filter = in_array($_GET['filter'] ?? '', ['bekliyor','tamamlandi','iptal']) ? $_GET['filter'] : 'all';
+    $filter = in_array($_GET['filter'] ?? '', ['bekliyor','onaylandi','tamamlandi','iptal']) ? $_GET['filter'] : 'all';
 
     $empFilter = "";
     $params = [$shop['id']];
@@ -58,7 +58,7 @@ if (!$shop):
     }
     $stmt = $pdo->prepare("SELECT status, COUNT(*) as cnt FROM appointments WHERE shop_id = ? $countEmpFilter GROUP BY status");
     $stmt->execute($countParams);
-    $counts = ['all' => 0, 'bekliyor' => 0, 'tamamlandi' => 0, 'iptal' => 0];
+    $counts = ['all' => 0, 'bekliyor' => 0, 'onaylandi' => 0, 'tamamlandi' => 0, 'iptal' => 0];
     foreach ($stmt->fetchAll() as $row) {
         $counts[$row['status']] = (int)$row['cnt'];
         $counts['all'] += (int)$row['cnt'];
@@ -77,6 +77,7 @@ if (!$shop):
         $filters = [
             'all'        => ['label' => 'TÜMÜ',       'colorClasses' => 'text-black border-black'],
             'bekliyor'   => ['label' => 'BEKLEYEN',   'colorClasses' => 'text-[#fbbf24] border-[#fbbf24] bg-[#fbbf24]/10'],
+            'onaylandi'  => ['label' => 'İŞLEMDE',    'colorClasses' => 'text-[#3b82f6] border-[#3b82f6] bg-[#3b82f6]/10'],
             'tamamlandi' => ['label' => 'TAMAMLANAN', 'colorClasses' => 'text-secondary border-secondary bg-secondary/10'],
             'iptal'      => ['label' => 'İPTAL',      'colorClasses' => 'text-error border-error bg-error/10'],
         ];
@@ -117,8 +118,9 @@ if (!$shop):
                     $statusBg = 'bg-surface-container-highest text-stone-500';
                     $statusLbl = 'BİLİNMİYOR';
                     if ($a['status'] === 'bekliyor') { $statusBg = 'bg-[#fefee5] border-[#fbbf24] text-[#d97706]'; $statusLbl = 'BEKLİYOR'; }
+                    else if ($a['status'] === 'onaylandi') { $statusBg = 'bg-[#3b82f6]/10 border-[#3b82f6] text-[#3b82f6]'; $statusLbl = 'İŞLEM YAPILIYOR'; }
                     else if ($a['status'] === 'tamamlandi') { $statusBg = 'bg-secondary text-white border-black'; $statusLbl = 'TAMAMLANDI'; }
-                    else if ($a['status'] === 'iptal') { $statusBg = 'bg-error text-white border-none'; $statusLbl = 'İPTAL'; }
+                    else if ($a['status'] === 'iptal') { $statusBg = 'bg-error text-white border-transparent'; $statusLbl = 'İPTAL'; }
 
                     // 24 saat kontrolü için appointment_time'ı JS'e güvenli şekilde aktar
                     $apptTimeJs = json_encode($a['appointment_time']);
@@ -161,14 +163,18 @@ if (!$shop):
                     <td class="px-6 py-6 text-center pb-6">
                         <div class="flex flex-col gap-2 scale-90 md:scale-100 items-center justify-center">
                             <?php if ($a['status'] === 'bekliyor'): ?>
-                            <div id="action-<?= $a['id'] ?>">
+                            <div id="action-<?= $a['id'] ?>" class="flex gap-2">
                                 <button class="w-full bg-secondary text-white border-2 border-black px-4 py-2 text-xs font-black uppercase tracking-widest hover:-translate-y-0.5 transition-transform"
-                                    onclick="kabul(<?= $a['id'] ?>, <?= $apptTimeJs ?>)">✔ KABUL ET</button>
+                                    onclick="updateAppStatus(<?= $a['id'] ?>, 'onaylandi')">✔ KABUL</button>
+                                <button class="w-full bg-error text-white border-2 border-black px-4 py-2 text-xs font-black uppercase tracking-widest hover:-translate-y-0.5 transition-transform"
+                                    onclick="updateAppStatus(<?= $a['id'] ?>, 'iptal')">✕ REDDET</button>
                             </div>
+                            <?php elseif ($a['status'] === 'onaylandi'): ?>
+                            <span class="text-[#3b82f6] font-bold uppercase text-xs animate-pulse">İşlem Yapılıyor...</span>
                             <?php elseif ($a['status'] === 'tamamlandi'): ?>
                             <span class="text-stone-400 font-bold uppercase text-xs">Tamamlandı</span>
                             <?php else: ?>
-                            <span class="text-stone-400 font-bold uppercase text-xs">İptal Edildi</span>
+                            <span class="text-stone-400 font-bold uppercase text-xs">Reddedildi/İptal</span>
                             <?php endif; ?>
                         </div>
                     </td>
@@ -182,42 +188,18 @@ if (!$shop):
 </div>
 
 <script>
-function kabul(id, appointmentTime) {
-    const now = new Date();
-    const appt = new Date(appointmentTime.replace(' ', 'T'));
-    const hoursLeft = (appt - now) / (1000 * 60 * 60);
-
-    let cancelHtml;
-    if (hoursLeft > 24) {
-        cancelHtml = `<button class="w-full bg-white text-error border-2 border-black px-3 py-2 text-xs font-black uppercase tracking-widest hover:bg-error hover:text-white transition-colors mt-1"
-            onclick="cancelApp(${id})">✕ İptal Et</button>`;
-    } else {
-        cancelHtml = `<div class="text-[10px] font-bold text-stone-400 text-center mt-1 leading-tight">24 saate az kaldı<br>iptal edilemez</div>`;
-    }
-
-    document.getElementById('action-' + id).innerHTML = `
-        <div class="flex flex-col gap-1 items-center">
-            <span class="text-secondary font-black text-xs uppercase tracking-widest">✔ Kabul Edildi</span>
-            ${cancelHtml}
-        </div>`;
-}
-
-async function cancelApp(id) {
+async function updateAppStatus(id, newStatus) {
     const fd = new FormData();
     fd.set('action', 'update_appointment');
     fd.set('appointment_id', id);
-    fd.set('status', 'iptal');
+    fd.set('status', newStatus);
 
     const res  = await fetch('berber/api.php', { method: 'POST', body: fd });
     const data = await res.json();
     showToast(data.success ? 'success' : 'error', data.message);
 
     if (data.success) {
-        const badge = document.getElementById('badge-' + id);
-        badge.className = 'inline-block px-3 py-1 rounded text-xs font-black uppercase tracking-widest bg-error text-white border-[2px] border-transparent';
-        badge.textContent = 'İPTAL';
-        document.getElementById('action-' + id).innerHTML =
-            `<span class="text-stone-400 font-bold uppercase text-xs">İptal Edildi</span>`;
+        setTimeout(() => location.reload(), 1000);
     }
 }
 </script>
