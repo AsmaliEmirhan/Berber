@@ -161,18 +161,7 @@ $shops = $stmt->fetchAll();
             <div class="bg-surface-container-low sketchy-border p-6 rotate-1">
                 <h3 class="font-headline font-black text-xl mb-4 border-b-2 border-black pb-2">BİLİYOR MUYDUNUZ?</h3>
                 <?php
-                $barberFacts = [
-                    "Dünyanın bilinen en eski berberlik aletlerinin M.Ö. 3500 yıllarına, Antik Mısır'a kadar uzandığını ve o dönemde berberlerin tıp adamları kadar saygı görddüğünü biliyor muydunuz?",
-                    "Orta Çağ'da berberlerin sadece saç kesmediğini; aynı zamanda diş çekimi, hacamat ve ufak cerrahi operasyonlar yaparak 'Cerrah-Berber' ünvanını taşıdıklarını biliyor muydunuz?",
-                    "Berber dükkanlarının kapısındaki meşhur dönen renkli direğin (Barber Pole); kanı, sargı bezini ve damarları temsil eden tarihi bir sembol olduğunu biliyor muydunuz?",
-                    "Sakal tıraşı olmanın Eski Roma'da bir erkeğin yetişkinliğe adım atma töreni sayıldığını ve ilk tıraştaki sakalların tanrılara adak olarak sunulduğunu biliyor muydunuz?",
-                    "İnsan saçının her telinin ortalama 100 gram ağarlık taşıyabildiğini ve tüm başınızdaki saçların toplamda iki filin ağırlığını kaldırabilecek kapasitede olduğunu biliyor muydunuz?",
-                    "İlk elektrikli saç kesme makinesinin 1921 yılında Leo J. Wahl tarafından ABD'de icat edildiğini ve o günden beri dünyada erkek bakımında devrim yarattığını biliyor muydunuz?",
-                    "Ortalama bir erkeğin hayatı boyunca sakal tıraşı olmak ve düzeltmek için yaklaşık 3.000 saat (tam 125 gün) harcadığını biliyor muydunuz?",
-                    "Ustura ile yapılan geleneksel ve sıcak havlulu sakal tıraşının, kan dolaşımını hızlandırarak cildin yaşlanmasını geciktirdiğini ve ölü deriyi mükemmel attığını biliyor muydunuz?",
-                    "Soğuk su ile yüz yıkamanın veya tıraşı soğuk su ile bitirmenin gözenekleri mükemmel seviyede sıkılaştırdığını ve cildi rahatlattığını biliyor muydunuz?",
-                    "Usta bir berberin makas kullanırken saç tellerinin uçlarını mikro seviyede temiz bir şekilde kapatabildiğini, bunun da saç fönünün ve şeklinin çok daha uzun süre dayanmasını sağladığını biliyor muydunuz?"
-                ];
+                $barberFacts = include __DIR__ . '/../config/facts.php';
                 $dailyFact = $barberFacts[array_rand($barberFacts)];
                 ?>
                 <p class="font-body font-medium leading-relaxed italic text-on-surface-variant text-sm">
