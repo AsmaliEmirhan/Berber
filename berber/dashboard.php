@@ -11,20 +11,32 @@ if (!$shop): ?>
 <?php else:
     $shopId = $shop['id'];
 
-    $stmt = $pdo->prepare('SELECT COUNT(*) FROM appointments WHERE shop_id = ?');
-    $stmt->execute([$shopId]);
+    $empFilterAlias = "";
+    $empFilterPlain = "";
+    $paramsAlias = [$shopId];
+    $paramsPlain = [$shopId];
+    
+    if ($userRoleInShop === 'Çalışan') {
+        $empFilterAlias = " AND a.employee_id = ?";
+        $empFilterPlain = " AND employee_id = ?";
+        $paramsAlias[] = $_SESSION['user_id'];
+        $paramsPlain[] = $_SESSION['user_id'];
+    }
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE shop_id = ? $empFilterPlain");
+    $stmt->execute($paramsPlain);
     $totalAppointments = (int)$stmt->fetchColumn();
 
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE shop_id = ? AND status = 'bekliyor'");
-    $stmt->execute([$shopId]);
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE shop_id = ? AND status = 'bekliyor' $empFilterPlain");
+    $stmt->execute($paramsPlain);
     $pendingCount = (int)$stmt->fetchColumn();
 
-    $stmt = $pdo->prepare("SELECT COALESCE(SUM(price_at_that_time),0) FROM appointments WHERE shop_id = ? AND status = 'tamamlandi'");
-    $stmt->execute([$shopId]);
+    $stmt = $pdo->prepare("SELECT COALESCE(SUM(price_at_that_time),0) FROM appointments WHERE shop_id = ? AND status = 'tamamlandi' $empFilterPlain");
+    $stmt->execute($paramsPlain);
     $totalEarnings = (float)$stmt->fetchColumn();
 
-    $stmt = $pdo->prepare('SELECT COUNT(DISTINCT customer_id) FROM appointments WHERE shop_id = ?');
-    $stmt->execute([$shopId]);
+    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT customer_id) FROM appointments WHERE shop_id = ? $empFilterPlain");
+    $stmt->execute($paramsPlain);
     $totalCustomers = (int)$stmt->fetchColumn();
 
     $stmt = $pdo->prepare("
@@ -32,9 +44,10 @@ if (!$shop): ?>
         FROM appointments
         WHERE shop_id = ? AND status = 'tamamlandi'
           AND appointment_time >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+          $empFilterPlain
         GROUP BY DATE(appointment_time)
     ");
-    $stmt->execute([$shopId]);
+    $stmt->execute($paramsPlain);
     $rawChart = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
     $chartLabels = [];
@@ -49,23 +62,23 @@ if (!$shop): ?>
         SELECT s.service_name, COUNT(*) as cnt
         FROM appointments a
         JOIN services s ON a.service_id = s.id
-        WHERE a.shop_id = ?
+        WHERE a.shop_id = ? $empFilterAlias
         GROUP BY s.service_name
         ORDER BY cnt DESC
         LIMIT 5
     ");
-    $stmt->execute([$shopId]);
+    $stmt->execute($paramsAlias);
     $popularServices = $stmt->fetchAll();
 
     $stmt = $pdo->prepare("
         SELECT HOUR(appointment_time) as hr, COUNT(*) as cnt
         FROM appointments
-        WHERE shop_id = ?
+        WHERE shop_id = ? $empFilterPlain
         GROUP BY HOUR(appointment_time)
         ORDER BY cnt DESC
         LIMIT 5
     ");
-    $stmt->execute([$shopId]);
+    $stmt->execute($paramsPlain);
     $busyHours = $stmt->fetchAll();
 
     $stmt = $pdo->prepare("
@@ -75,12 +88,26 @@ if (!$shop): ?>
         LEFT JOIN users u ON a.customer_id = u.id
         JOIN services sv ON a.service_id = sv.id
         JOIN users  e  ON a.employee_id  = e.id
-        WHERE a.shop_id = ?
+        WHERE a.shop_id = ? $empFilterAlias
         ORDER BY a.appointment_time DESC
         LIMIT 6
     ");
-    $stmt->execute([$shopId]);
+    $stmt->execute($paramsAlias);
     $recent = $stmt->fetchAll();
+
+    $workerEarnings = [];
+    if ($userRoleInShop === 'Patron') {
+        $stmt = $pdo->prepare("
+            SELECT e.full_name, COALESCE(SUM(a.price_at_that_time),0) as earned
+            FROM appointments a
+            JOIN users e ON a.employee_id = e.id
+            WHERE a.shop_id = ? AND a.status = 'tamamlandi'
+            GROUP BY a.employee_id
+            ORDER BY earned DESC
+        ");
+        $stmt->execute([$shopId]);
+        $workerEarnings = $stmt->fetchAll();
+    }
 ?>
 
 <div class="max-w-screen-xl mx-auto px-6 py-6 overflow-hidden">
@@ -240,6 +267,38 @@ if (!$shop): ?>
         </div>
 
     </div>
+
+    <!-- İşçi Kazançları (Sadece Patron Görünümü) -->
+    <?php if ($userRoleInShop === 'Patron'): ?>
+    <div class="mb-20">
+        <h2 class="text-3xl font-headline font-black italic mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-secondary text-4xl" style="font-variation-settings: 'FILL' 1;">badge</span>
+            Personel Hasılatları
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <?php if (empty($workerEarnings)): ?>
+                <div class="col-span-full border-4 border-dashed border-black p-8 text-center bg-surface-container-lowest sketch-shadow">
+                    <p class="font-bold text-on-surface-variant font-medium">Henüz tamamlanmış personel kesimi bulunmuyor.</p>
+                </div>
+            <?php else: foreach ($workerEarnings as $we): ?>
+                <div class="bg-white border-4 border-black p-6 rounded-2xl hover:-translate-y-1 hover:shadow-[6px_6px_0_#000] transition-all">
+                    <div class="flex items-center gap-4 mb-4 border-b-2 border-black/10 pb-4">
+                        <div class="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center font-black text-2xl border-2 border-black shrink-0">
+                            <?= mb_strtoupper(mb_substr($we['full_name'],0,1)) ?>
+                        </div>
+                        <h4 class="font-headline font-bold text-lg uppercase leading-tight italic"><?= htmlspecialchars($we['full_name']) ?></h4>
+                    </div>
+                    <div>
+                        <span class="text-xs font-black tracking-widest uppercase text-stone-500 block mb-1">Dükkana Kazandırdığı</span>
+                        <div class="text-4xl font-headline font-black text-[#006017]">
+                            ₺<?= number_format($we['earned'], 0, '', '.') ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; endif; ?>
+        </div>
+    </div>
+    <?php endif; ?>
 
 </div>
 

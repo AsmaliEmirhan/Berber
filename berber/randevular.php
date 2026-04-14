@@ -20,6 +20,13 @@ if (!$shop):
 
     $filter = in_array($_GET['filter'] ?? '', ['bekliyor','tamamlandi','iptal']) ? $_GET['filter'] : 'all';
 
+    $empFilter = "";
+    $params = [$shop['id']];
+    if ($userRoleInShop === 'Çalışan') {
+        $empFilter = " AND a.employee_id = ?";
+        $params[] = $_SESSION['user_id'];
+    }
+
     $sql = "
         SELECT a.*, COALESCE(u.full_name, a.walkin_name) AS customer_name,
                COALESCE(u.email, 'Yüz Yüze Müşteri') AS customer_email,
@@ -29,9 +36,8 @@ if (!$shop):
         LEFT JOIN users u  ON a.customer_id  = u.id
         JOIN services  sv ON a.service_id   = sv.id
         JOIN users     e  ON a.employee_id  = e.id
-        WHERE a.shop_id = ?
+        WHERE a.shop_id = ? $empFilter
     ";
-    $params = [$shop['id']];
 
     if ($filter !== 'all') {
         $sql .= ' AND a.status = ?';
@@ -44,8 +50,14 @@ if (!$shop):
     $appointments = $stmt->fetchAll();
 
     // Sayılar
-    $stmt = $pdo->prepare("SELECT status, COUNT(*) as cnt FROM appointments WHERE shop_id = ? GROUP BY status");
-    $stmt->execute([$shop['id']]);
+    $countParams = [$shop['id']];
+    $countEmpFilter = "";
+    if ($userRoleInShop === 'Çalışan') {
+        $countEmpFilter = " AND employee_id = ?";
+        $countParams[] = $_SESSION['user_id'];
+    }
+    $stmt = $pdo->prepare("SELECT status, COUNT(*) as cnt FROM appointments WHERE shop_id = ? $countEmpFilter GROUP BY status");
+    $stmt->execute($countParams);
     $counts = ['all' => 0, 'bekliyor' => 0, 'tamamlandi' => 0, 'iptal' => 0];
     foreach ($stmt->fetchAll() as $row) {
         $counts[$row['status']] = (int)$row['cnt'];
