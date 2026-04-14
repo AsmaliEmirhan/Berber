@@ -23,7 +23,7 @@ $activeNav = ($page === 'berber_detay') ? 'kesfet' : $page;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Müşteri Paneli — Berber Randevu</title>
+    <title>MÃ¼ÅŸteri Paneli â€” Berber Randevu</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -69,9 +69,12 @@ $activeNav = ($page === 'berber_detay') ? 'kesfet' : $page;
 
 <header class="bg-[#fefee5] w-full border-b-2 border-black sticky top-0 z-50">
     <nav class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto font-['Plus_Jakarta_Sans'] tracking-tight">
-        <div class="flex items-center gap-8">
+        <div class="flex items-center gap-4">
+            <button id="hamburgerBtn" class="md:hidden p-2 border-2 border-black rounded-lg hover:bg-black hover:text-white transition-colors">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
             <a href="index.php" class="block flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer">
-                <img src="assets/img/logo.png" alt="Berber Randevu Logo" class="h-12 md:h-16 w-auto object-contain">
+                <img src="assets/img/logo.png" alt="Berber Randevu Logo" class="h-10 md:h-16 w-auto object-contain">
             </a>
             <div class="hidden md:flex gap-6 items-center">
                 <a href="?page=kesfet" class="text-black font-black pb-1 hover:-translate-y-0.5 hover:rotate-1 transition-transform border-b-4 <?= $activeNav==='kesfet' ? 'border-black' : 'border-transparent text-stone-600' ?>">Berberler / Keşfet</a>
@@ -89,6 +92,29 @@ $activeNav = ($page === 'berber_detay') ? 'kesfet' : $page;
     </nav>
 </header>
 
+<!-- Mobile Navigation Menu -->
+<div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-[100] hidden opacity-0 transition-opacity duration-300"></div>
+<aside id="mobileMenu" class="fixed top-0 left-0 bottom-0 w-[280px] bg-surface z-[101] border-r-4 border-black -translate-x-full transition-transform duration-300 ease-in-out p-6 flex flex-col">
+    <div class="flex justify-between items-center mb-10">
+        <img src="assets/img/logo.png" alt="Logo" class="h-12 w-auto">
+        <button id="closeMenuBtn" class="p-2 border-2 border-black rounded-lg">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+    <nav class="flex flex-col gap-6 font-headline">
+        <a href="?page=kesfet" class="text-2xl font-black italic border-b-2 border-black pb-2 <?= $activeNav==='kesfet' ? 'text-secondary border-secondary' : 'text-stone-600' ?>">Berberler / Keşfet</a>
+        <a href="?page=randevularim" class="text-2xl font-black italic border-b-2 border-black pb-2 <?= $activeNav==='randevularim' ? 'text-secondary border-secondary' : 'text-stone-600' ?>">Randevularım</a>
+        <a href="logout.php" class="text-2xl font-black italic text-error border-b-2 border-error pb-2 mt-4 flex items-center gap-2">
+            <span class="material-symbols-outlined">logout</span> Çıkış Yap
+        </a>
+    </nav>
+    <div class="mt-auto pt-10 border-t-2 border-black/10">
+        <p class="text-sm font-bold sketch-border px-3 py-1 bg-surface-container-lowest inline-block">
+            Hoş Geldin, <span class="text-secondary"><?= htmlspecialchars($user['full_name']) ?></span>
+        </p>
+    </div>
+</aside>
+
 <main class="flex-grow w-full relative z-10">
     <?php include __DIR__ . "/musteri/{$page}.php"; ?>
 </main>
@@ -97,11 +123,11 @@ $activeNav = ($page === 'berber_detay') ? 'kesfet' : $page;
     <div class="flex flex-col md:flex-row justify-between items-center w-full px-8 py-10 gap-6 max-w-screen-2xl mx-auto font-['Work_Sans'] text-sm uppercase tracking-widest">
         <div class="font-black text-black text-lg italic tracking-tighter">Berber Defteri</div>
         <div class="flex flex-wrap justify-center gap-8 font-medium">
-            <a class="text-stone-500 hover:text-black hover:underline transition-colors block" href="#">Hakkımızda</a>
+            <a class="text-stone-500 hover:text-black hover:underline transition-colors block" href="#">HakkÄ±mÄ±zda</a>
             <a class="text-stone-500 hover:text-black hover:underline transition-colors block" href="#">S.S.S.</a>
         </div>
         <div class="text-stone-500 text-xs normal-case tracking-normal">
-            © 2024 Berber Defteri. El çizimi ile özenle hazırlanmıştır.
+            Â© 2024 Berber Defteri. El Ã§izimi ile Ã¶zenle hazÄ±rlanmÄ±ÅŸtÄ±r.
         </div>
     </div>
 </footer>
@@ -163,6 +189,24 @@ $activeNav = ($page === 'berber_detay') ? 'kesfet' : $page;
             if (e.key === 'Escape' && modalBackdrop.classList.contains('open')) closeModal();
         });
     }
+
+    // Mobile Menu Logic
+    const mobileMenuBtn = document.getElementById('hamburgerBtn');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+    function toggleMenu() {
+        if (!mobileMenu) return;
+        mobileMenu.classList.toggle('-translate-x-full');
+        mobileMenuOverlay.classList.toggle('hidden');
+        setTimeout(() => mobileMenuOverlay.classList.toggle('opacity-0'), 10);
+        document.body.style.overflow = mobileMenu.classList.contains('-translate-x-full') ? '' : 'hidden';
+    }
+
+    if(mobileMenuBtn) mobileMenuBtn.onclick = toggleMenu;
+    if(closeMenuBtn) closeMenuBtn.onclick = toggleMenu;
+    if(mobileMenuOverlay) mobileMenuOverlay.onclick = toggleMenu;
 </script>
 </body>
 </html>

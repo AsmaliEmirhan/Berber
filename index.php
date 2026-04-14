@@ -65,9 +65,14 @@ $role = $_GET['role'] ?? 'musteri';
 <!-- ================== LANDING VIEW ================== -->
 <header class="bg-[#fefee5] border-b-2 border-black w-full px-6 py-4 z-40 relative">
     <div class="flex justify-between items-center w-full max-w-screen-2xl mx-auto font-['Plus_Jakarta_Sans'] tracking-tight">
-        <a href="?view=landing" class="block flex-shrink-0">
-            <img src="assets/img/logo.png" alt="Berber Randevu Logo" class="h-16 md:h-20 w-auto object-contain">
-        </a>
+        <div class="flex items-center gap-4">
+            <button id="mobileMenuBtn" class="md:hidden p-2 border-2 border-black rounded-lg hover:bg-black hover:text-white transition-colors">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <a href="?view=landing" class="block flex-shrink-0">
+                <img src="assets/img/logo.png" alt="Berber Randevu Logo" class="h-16 md:h-20 w-auto object-contain">
+            </a>
+        </div>
         <nav class="hidden md:flex gap-8 items-center">
             <a class="text-stone-600 font-medium hover:text-black hover:-translate-y-0.5 transition-transform" href="#">Berberler</a>
             <a class="text-stone-600 font-medium hover:text-black hover:-translate-y-0.5 transition-transform" href="#">Hizmetler</a>
@@ -77,6 +82,25 @@ $role = $_GET['role'] ?? 'musteri';
         </div>
     </div>
 </header>
+
+<!-- Mobile Navigation Menu -->
+<div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-[100] hidden opacity-0 transition-opacity duration-300"></div>
+<aside id="mobileMenu" class="fixed top-0 left-0 bottom-0 w-[280px] bg-surface z-[101] border-r-4 border-black -translate-x-full transition-transform duration-300 ease-in-out p-6 flex flex-col">
+    <div class="flex justify-between items-center mb-10">
+        <img src="assets/img/logo.png" alt="Logo" class="h-12 w-auto">
+        <button id="closeMenuBtn" class="p-2 border-2 border-black rounded-lg">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+    <nav class="flex flex-col gap-6 font-headline">
+        <a href="#" class="text-2xl font-black italic border-b-2 border-black pb-2">Berberler</a>
+        <a href="#" class="text-2xl font-black italic border-b-2 border-black pb-2">Hizmetler</a>
+        <a href="?view=login" class="text-2xl font-black italic text-secondary border-b-2 border-secondary pb-2">Giriş Yap</a>
+    </nav>
+    <div class="mt-auto pt-10 border-t-2 border-black/10">
+        <p class="text-xs font-label uppercase tracking-widest text-stone-500">Berber Randevu - Dijital Defter</p>
+    </div>
+</aside>
 <main class="relative flex-grow flex flex-col items-center justify-center py-20 px-4">
     <!-- Background Sketch Ornaments -->
     <div class="absolute top-20 -left-12 opacity-10 pointer-events-none rotate-[-15deg]"><span class="material-symbols-outlined text-[240px]" data-icon="content_cut">content_cut</span></div>
@@ -273,6 +297,23 @@ $role = $_GET['role'] ?? 'musteri';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Mobile Menu Logic
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+    function toggleMenu() {
+        mobileMenu.classList.toggle('-translate-x-full');
+        mobileMenuOverlay.classList.toggle('hidden');
+        setTimeout(() => mobileMenuOverlay.classList.toggle('opacity-0'), 10);
+        document.body.style.overflow = mobileMenu.classList.contains('-translate-x-full') ? '' : 'hidden';
+    }
+
+    if(mobileMenuBtn) mobileMenuBtn.onclick = toggleMenu;
+    if(closeMenuBtn) closeMenuBtn.onclick = toggleMenu;
+    if(mobileMenuOverlay) mobileMenuOverlay.onclick = toggleMenu;
+
     const roleBtns = document.querySelectorAll('.role-btn');
     const roleInput = document.getElementById('roleInput');
     const locationWrapper = document.getElementById('locationWrapper');
