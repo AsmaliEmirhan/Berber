@@ -26,6 +26,7 @@ match ($action) {
     'get_slots'          => getSlots($pdo),
     'book_appointment'   => bookAppointment($pdo, $userId),
     'cancel_appointment' => cancelAppointment($pdo, $userId),
+    'submit_review'      => submitReview($pdo, $userId),
     default              => respond(false, 'Geçersiz işlem.')
 };
 
@@ -239,6 +240,39 @@ function cancelAppointment(PDO $pdo, int $userId): void {
     $stmt = $pdo->prepare("UPDATE appointments SET status = 'iptal' WHERE id = ?");
     $stmt->execute([$id]);
     respond(true, 'Randevunuz iptal edildi.');
+}
+
+
+function submitReview(PDO $pdo, int $userId): void {
+    $appId = (int)($_POST['appointment_id'] ?? 0);
+    $shopId = (int)($_POST['shop_id'] ?? 0);
+    $rating = (int)($_POST['rating'] ?? 0);
+    $comment = trim($_POST['comment'] ?? '');
+
+    if (!$appId || !$shopId || $rating < 1 || $rating > 5) {
+        respond(false, 'Hatalı puanlama veya eksik bilgi.');
+    }
+
+    // Verify ownership and status
+    $stmt = $pdo->prepare("SELECT status FROM appointments WHERE id = ? AND customer_id = ? AND shop_id = ?");
+    $stmt->execute([$appId, $userId, $shopId]);
+    $app = $stmt->fetch();
+
+    if (!$app) respond(false, 'Randevu bulunamadı.');
+    if ($app['status'] !== 'tamamlandi') respond(false, 'Sadece tamamlanan hizmetlere yorum yapılabilir.');
+
+    // Duplicate check
+    $stmt = $pdo->prepare("SELECT id FROM reviews WHERE appointment_id = ?");
+    $stmt->execute([$appId]);
+    if ($stmt->fetch()) respond(false, 'Bu randevu için zaten yorum yapılmış.');
+
+    // Insert
+    $stmt = $pdo->prepare("INSERT INTO reviews (appointment_id, shop_id, customer_id, rating, comment) VALUES (?, ?, ?, ?, ?)");
+    if ($stmt->execute([$appId, $shopId, $userId, $rating, $comment])) {
+        respond(true, 'Değerlendirmeniz başarıyla kaydedilmiştir. Teşekkür ederiz!');
+    } else {
+        respond(false, 'Sistemsel bir hata oluştu.');
+    }
 }
 
 function respond(bool $success, string $message, array $extra = []): never {

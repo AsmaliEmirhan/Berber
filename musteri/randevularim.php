@@ -1,17 +1,18 @@
 <?php
 $filter = in_array($_GET['filter'] ?? '', ['bekliyor','tamamlandi','iptal']) ? $_GET['filter'] : 'all';
-
 $sql = "
     SELECT a.*,
            sh.shop_name,
            sv.service_name,
            e.full_name  AS employee_name,
-           d.name       AS district_name
+           d.name       AS district_name,
+           r.id         AS review_id
     FROM appointments a
     JOIN shops    sh ON a.shop_id     = sh.id
     JOIN services sv ON a.service_id  = sv.id
     JOIN users    e  ON a.employee_id = e.id
     LEFT JOIN districts d ON sh.district_id = d.id
+    LEFT JOIN reviews r ON r.appointment_id = a.id
     WHERE a.customer_id = ?
 ";
 $params = [$_SESSION['user_id']];
@@ -132,9 +133,21 @@ foreach ($stmt->fetchAll() as $row) {
                 </div>
             </div>
             
-            <div class="flex items-center justify-between border-t border-black/10 pt-4 mt-auto">
+                <div class="flex items-center justify-between border-t border-black/10 pt-4 mt-auto">
                 <div class="font-headline font-black text-xl">₺<?= number_format($a['price_at_that_time'], 2) ?></div>
                 <div class="flex gap-2">
+                    <?php if ($a['status'] === 'tamamlandi'): ?>
+                        <?php if ($a['review_id']): ?>
+                        <button disabled class="bg-surface-container-high text-stone-500 border-2 border-transparent px-4 py-2 font-bold uppercase text-xs cursor-not-allowed">
+                            Değerlendirildi
+                        </button>
+                        <?php else: ?>
+                        <button class="bg-[#3b82f6]/10 text-[#3b82f6] border-2 border-[#3b82f6] px-4 py-2 font-bold uppercase text-xs hover:bg-[#3b82f6] hover:text-white transition-colors" onclick="openReviewModal(<?= $a['id'] ?>, <?= $a['shop_id'] ?>)">
+                            Değerlendir
+                        </button>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    
                     <?php if ($isBekliyor && !$isPast): ?>
                     <button class="bg-[#fe8b70] text-[#742410] border-2 border-[#a54731] px-4 py-2 font-bold uppercase text-xs hover:bg-[#a54731] hover:text-white transition-colors rc-cancel-btn" onclick="cancelAppointment(<?= $a['id'] ?>)">
                         İptal
@@ -176,4 +189,72 @@ async function cancelAppointment(id) {
         if(cancelBtn) cancelBtn.remove();
     }
 }
+
+let currentReviewAppId = null;
+let currentReviewShopId = null;
+
+function openReviewModal(appId, shopId) {
+    currentReviewAppId = appId;
+    currentReviewShopId = shopId;
+    document.getElementById('reviewModal').classList.remove('hidden');
+    document.getElementById('reviewRating').value = 5;
+    document.getElementById('reviewComment').value = '';
+}
+
+function closeReviewModal() {
+    document.getElementById('reviewModal').classList.add('hidden');
+}
+
+async function submitReview() {
+    const rating = document.getElementById('reviewRating').value;
+    const comment = document.getElementById('reviewComment').value;
+    
+    if(!rating) return showToast('error', 'Lütfen yıldız verin!');
+    
+    const fd = new FormData();
+    fd.set('action', 'submit_review');
+    fd.set('appointment_id', currentReviewAppId);
+    fd.set('shop_id', currentReviewShopId);
+    fd.set('rating', rating);
+    fd.set('comment', comment);
+    
+    const res = await fetch('musteri/api.php', { method: 'POST', body: fd });
+    const data = await res.json();
+    
+    showToast(data.success ? 'success' : 'error', data.message);
+    if(data.success) {
+        closeReviewModal();
+        setTimeout(() => location.reload(), 1000);
+    }
+}
 </script>
+
+<!-- Değerlendirme Modalı -->
+<div id="reviewModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-surface border-4 border-black p-8 max-w-sm w-full mx-auto shadow-[12px_12px_0px_#000] rotate-1">
+        <h3 class="font-headline font-black text-2xl mb-2">Puanla & Yorumla</h3>
+        <p class="text-sm font-medium text-on-surface-variant mb-6">Ustanızın hizmetinden memnun kaldınız mı?</p>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block font-bold mb-1 text-sm uppercase">Puanınız</label>
+                <select id="reviewRating" class="w-full border-2 border-black p-2 font-bold bg-white focus:outline-none">
+                    <option value="5">⭐⭐⭐⭐⭐ Mükemmel (5)</option>
+                    <option value="4">⭐⭐⭐⭐ Çok İyi (4)</option>
+                    <option value="3">⭐⭐⭐ İyi (3)</option>
+                    <option value="2">⭐⭐ Vasat (2)</option>
+                    <option value="1">⭐ Kötü (1)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-bold mb-1 text-sm uppercase">Yorumunuz</label>
+                <textarea id="reviewComment" rows="3" class="w-full border-2 border-black p-2 font-medium bg-white focus:outline-none" placeholder="Berberiniz hakkında ne düşünüyorsunuz?"></textarea>
+            </div>
+        </div>
+        
+        <div class="flex gap-4 mt-6">
+            <button onclick="closeReviewModal()" class="flex-1 bg-surface-container border-2 border-black py-3 font-bold uppercase text-sm hover:bg-black hover:text-white transition-colors">Vazgeç</button>
+            <button onclick="submitReview()" class="flex-1 bg-secondary text-white border-2 border-black py-3 font-bold uppercase text-sm hover:opacity-90 transition-colors">Gönder</button>
+        </div>
+    </div>
+</div>

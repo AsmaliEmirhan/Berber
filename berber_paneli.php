@@ -52,12 +52,12 @@ if (!empty($allShops)) {
     $userRoleInShop = $shop ? $shop['_role'] : null;
 }
 
-$allowedPages = ['dashboard', 'dukkan', 'hizmetler', 'calisanlar', 'randevular', 'analiz', 'istatistik', 'plus'];
+$allowedPages = ['dashboard', 'dukkan', 'hizmetler', 'calisanlar', 'randevular', 'analiz', 'istatistik', 'yorumlar', 'plus'];
 $page = in_array($_GET['page'] ?? '', $allowedPages) ? $_GET['page'] : 'dashboard';
 
 // Enforce Employee Restrictions
 if ($userRoleInShop === 'Çalışan') {
-    $restricted = ['istatistik', 'dukkan', 'calisanlar'];
+    $restricted = ['istatistik', 'dukkan', 'calisanlar', 'yorumlar'];
     if (in_array($page, $restricted)) {
         $page = 'dashboard';
     }
@@ -150,6 +150,8 @@ if ($shop) {
             </a>
 
             <?php if ($userRoleInShop !== 'Çalışan'): ?>
+                <a href="?page=yorumlar" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='yorumlar'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">Yorumlar</a>
+
                 <?php if ($user['is_plus']): ?>
                 <a href="?page=istatistik" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='istatistik'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">İstatistikler</a>
                 <?php else: ?>

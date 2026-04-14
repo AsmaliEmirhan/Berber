@@ -17,13 +17,16 @@ $sql    = "
            d.name                              AS district_name,
            u.full_name                         AS owner_name,
            COUNT(DISTINCT sv.id)               AS service_count,
-           COUNT(DISTINCT se.employee_id)      AS employee_count
+           COUNT(DISTINCT se.employee_id)      AS employee_count,
+           AVG(r.rating)                       AS avg_rating,
+           COUNT(DISTINCT r.id)                AS review_count
     FROM shops s
     JOIN users u ON s.owner_id = u.id
     LEFT JOIN districts d ON s.district_id = d.id
     LEFT JOIN services sv ON sv.shop_id = s.id
     LEFT JOIN shop_employees se ON se.shop_id = s.id
     LEFT JOIN users emp ON se.employee_id = emp.id
+    LEFT JOIN reviews r ON r.shop_id = s.id
     WHERE 1=1
 ";
 $params = [];
@@ -44,10 +47,41 @@ if ($search) {
     $params[] = $like;
 }
 
-$sql .= ' GROUP BY s.id, d.name, u.full_name ORDER BY s.created_at DESC';
+$sort = $_GET['sort'] ?? 'newest';
+if ($sort === 'top_rated') {
+    $sql .= ' GROUP BY s.id, d.name, u.full_name ORDER BY avg_rating DESC, s.created_at DESC';
+} else {
+    $sql .= ' GROUP BY s.id, d.name, u.full_name ORDER BY s.created_at DESC';
+}
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $shops = $stmt->fetchAll();
+
+// Top 10 Puanlı Berberler
+$top10Sql = "
+    SELECT s.*, 
+           u.full_name as owner_name, 
+           d.name as district_name,
+           AVG(r.rating) as avg_rating,
+           COUNT(DISTINCT r.id) as review_count
+    FROM shops s
+    JOIN users u ON s.owner_id = u.id
+    LEFT JOIN districts d ON s.district_id = d.id
+    LEFT JOIN reviews r ON r.shop_id = s.id
+    WHERE 1=1 ";
+
+$top10Params = [];
+if ($filterCity) {
+    $top10Sql .= " AND s.city_id = ? ";
+    $top10Params[] = $filterCity;
+}
+// En az 1 yorumu olanlar içinden sırala
+$top10Sql .= " GROUP BY s.id HAVING review_count > 0 ORDER BY avg_rating DESC, s.created_at DESC LIMIT 10 ";
+
+$stmt = $pdo->prepare($top10Sql);
+$stmt->execute($top10Params);
+$top10Shops = $stmt->fetchAll();
 ?>
 
 <div class="max-w-screen-xl mx-auto px-6 py-8 relative">
@@ -90,6 +124,11 @@ $shops = $stmt->fetchAll();
                 <?php endforeach; ?>
             </select>
             
+            <select name="sort" class="bg-surface border-2 border-black rounded-xl px-4 py-3 font-headline font-bold focus:outline-none focus:border-secondary transition-colors appearance-none pr-8">
+                <option value="newest" <?= $sort === 'newest' ? 'selected' : '' ?>>Yeniden Eskiye</option>
+                <option value="top_rated" <?= $sort === 'top_rated' ? 'selected' : '' ?>>En Yüksek Puanlı</option>
+            </select>
+            
             <button type="submit" class="bg-black text-white px-8 py-3 rounded-xl border-2 border-black font-bold font-headline uppercase hover:-translate-y-1 active:translate-y-0 transition-transform cursor-pointer">
                 Filtrele
             </button>
@@ -99,6 +138,35 @@ $shops = $stmt->fetchAll();
             <?php endif; ?>
         </form>
     </section>
+
+    <!-- TOP 10 Vitrini -->
+    <?php if (!empty($top10Shops)): ?>
+    <section class="mb-16">
+        <h2 class="font-headline font-black text-3xl italic mb-6 border-b-4 border-black inline-block text-secondary drop-shadow-[2px_2px_0_#000]">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">workspace_premium</span> 
+            <?= $filterCity ? 'ŞEHRİN EN İYİLERİ' : 'TÜRKİYE GENELİ EN İYİLER' ?> (TOP 10)
+        </h2>
+        <div class="flex overflow-x-auto gap-6 pb-6 pt-2 snap-x">
+            <?php foreach($top10Shops as $idx => $ts): ?>
+            <a href="?page=berber_detay&shop_id=<?= $ts['id'] ?>" class="snap-start shrink-0 w-64 bg-surface-container-highest border-4 border-black rounded-xl p-4 hover:-translate-y-2 transition-transform shadow-[6px_6px_0px_#000] relative group">
+                <div class="absolute -top-4 -left-4 w-10 h-10 bg-secondary rounded-full border-2 border-black flex items-center justify-center font-black text-white text-xl z-20">#<?= $idx+1 ?></div>
+                <div class="w-full h-32 bg-[#e7edb4] rounded-lg border-2 border-black mb-4 flex items-center justify-center relative overflow-hidden">
+                    <span class="font-headline font-black text-6xl opacity-30"><?= mb_strtoupper(mb_substr($ts['shop_name'],0,1)) ?></span>
+                </div>
+                <h3 class="font-headline font-black text-xl line-clamp-1 truncate"><?= htmlspecialchars($ts['shop_name']) ?></h3>
+                <p class="font-body text-xs font-bold text-on-surface-variant flex gap-1 mb-2">
+                    <span class="material-symbols-outlined text-[14px]">location_on</span> <?= htmlspecialchars($ts['district_name']) ?>
+                </p>
+                <div class="flex items-center gap-1 text-[#fbbf24] drop-shadow-[1px_1px_0px_#000]">
+                    <span class="font-black text-lg"><?= number_format($ts['avg_rating'], 1) ?></span>
+                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                    <span class="text-xs text-black ml-1 font-bold">(<?= $ts['review_count'] ?>)</span>
+                </div>
+            </a>
+            <?php endforeach; ?>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <!-- Search Results Grid -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
@@ -122,8 +190,10 @@ $shops = $stmt->fetchAll();
                         <div>
                             <div class="flex justify-between items-start">
                                 <h2 class="font-headline font-black text-3xl text-black"><?= htmlspecialchars($s['shop_name']) ?></h2>
-                                <div class="flex items-center gap-1 bg-surface-container-highest px-2 py-1 border border-black text-xs font-bold whitespace-nowrap">
-                                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span> YENİ
+                                
+                                <div class="flex items-center gap-1 bg-surface-container-highest px-2 py-1 border border-black text-xs font-bold whitespace-nowrap text-[#fbbf24]">
+                                    <span class="text-black"><?= $s['avg_rating'] ? number_format($s['avg_rating'], 1) : 'Yeni' ?></span>
+                                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
                                 </div>
                             </div>
                             <p class="font-body text-on-surface-variant mt-1 italic font-medium">Sahibi: <?= htmlspecialchars($s['owner_name']) ?></p>

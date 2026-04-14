@@ -41,6 +41,22 @@ $employees = $stmt->fetchAll();
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE shop_id = ? AND status = 'tamamlandi'");
 $stmt->execute([$shopId]);
 $completedCount = (int)$stmt->fetchColumn();
+
+$stmt = $pdo->prepare("SELECT AVG(rating) as avg_rating, COUNT(id) as review_count FROM reviews WHERE shop_id = ?");
+$stmt->execute([$shopId]);
+$revStats = $stmt->fetch();
+$avgRating = $revStats['avg_rating'] ? round($revStats['avg_rating'], 1) : 0;
+$revCount = $revStats['review_count'] ?? 0;
+
+$stmt = $pdo->prepare("
+    SELECT r.rating, r.comment, r.created_at, u.full_name 
+    FROM reviews r 
+    JOIN users u ON r.customer_id = u.id 
+    WHERE r.shop_id = ? 
+    ORDER BY r.created_at DESC
+");
+$stmt->execute([$shopId]);
+$reviews = $stmt->fetchAll();
 ?>
 
 <div class="max-w-screen-xl mx-auto px-6 py-12">
@@ -60,6 +76,13 @@ $completedCount = (int)$stmt->fetchColumn();
         <div class="flex-grow flex flex-col justify-center text-center md:text-left">
             <h1 class="font-headline font-black text-4xl md:text-6xl text-black italic mb-2"><?= htmlspecialchars($shop['shop_name']) ?></h1>
             <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">
+                <!-- Stars -->
+                <div class="flex items-center gap-1 text-[#fbbf24] drop-shadow-[1px_1px_0px_#000]">
+                    <span class="font-black text-lg"><?= $avgRating > 0 ? number_format($avgRating, 1) : 'Yeni' ?></span>
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+                    <span class="text-xs text-on-surface-variant ml-1 font-bold">(<?= $revCount ?>)</span>
+                </div>
+                
                 <?php if ($shop['district_name']): ?>
                 <span class="flex items-center gap-1"><span class="material-symbols-outlined text-lg">location_on</span> <?= htmlspecialchars($shop['district_name']) ?></span>
                 <?php endif; ?>
@@ -134,7 +157,7 @@ $completedCount = (int)$stmt->fetchColumn();
 
     <!-- Çalışanlar -->
     <?php if (!empty($employees)): ?>
-    <div class="mb-12">
+    <div class="mb-16">
         <h2 class="font-headline font-black text-3xl italic text-black uppercase mb-6 text-center md:text-left border-b-4 border-black inline-block pb-1">Personelimiz</h2>
         <div class="flex flex-wrap gap-4 justify-center md:justify-start">
             <?php foreach ($employees as $emp): ?>
@@ -148,6 +171,53 @@ $completedCount = (int)$stmt->fetchColumn();
         </div>
     </div>
     <?php endif; ?>
+
+    <!-- Yorumlar -->
+    <div class="mb-12">
+        <h2 class="font-headline font-black text-3xl italic text-black uppercase mb-6 text-center md:text-left border-b-4 border-black inline-block pb-1">Müşteri Yorumları</h2>
+        
+        <?php if (empty($reviews)): ?>
+            <div class="bg-surface-container-lowest sketchy-border p-8 text-center text-on-surface-variant font-medium">
+                Bu dükkan için henüz yorum yapılmamış. İlk değerlendiren siz olun!
+            </div>
+        <?php else: ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <?php foreach ($reviews as $rev): 
+                    // Hide name logic (e.g. "Emirhan Yıldırım" -> "E****** Y******")
+                    $nameParts = explode(' ', $rev['full_name']);
+                    $hiddenName = [];
+                    foreach ($nameParts as $part) {
+                        $len = mb_strlen($part);
+                        if ($len > 1) {
+                            $hiddenName[] = mb_substr($part, 0, 1) . str_repeat('*', $len - 1);
+                        } else {
+                            $hiddenName[] = $part;
+                        }
+                    }
+                    $hiddenNameStr = implode(' ', $hiddenName);
+                ?>
+                <div class="bg-white border-4 border-black rounded-xl p-6 hover:-translate-y-1 transition-transform shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                    <div class="flex justify-between items-start border-b-2 border-black/10 pb-4 mb-4">
+                        <div>
+                            <div class="font-black text-lg uppercase tracking-tight"><?= htmlspecialchars($hiddenNameStr) ?></div>
+                            <div class="text-xs font-bold text-stone-400 mt-1"><?= date('d M Y, H:i', strtotime($rev['created_at'])) ?></div>
+                        </div>
+                        <div class="flex text-[#fbbf24] drop-shadow-[1px_1px_0px_#000]">
+                            <?php for($i=1; $i<=5; $i++): ?>
+                                <span class="material-symbols-outlined text-lg" <?= $i <= $rev['rating'] ? 'style="font-variation-settings:\'FILL\' 1"' : '' ?>>star</span>
+                            <?php endfor; ?>
+                        </div>
+                    </div>
+                    <?php if ($rev['comment']): ?>
+                        <p class="font-medium text-stone-700 italic">"<?= nl2br(htmlspecialchars($rev['comment'])) ?>"</p>
+                    <?php else: ?>
+                        <p class="font-medium text-stone-400 italic text-sm">Puan bırakıldı, yorum yazılmadı.</p>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <!-- Randevu Booking Modal Şablonu -->

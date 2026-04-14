@@ -1165,3 +1165,19 @@ CREATE TABLE IF NOT EXISTS appointments (
 -- ------------------------------------------------------------
 -- ALTER TABLE appointments MODIFY COLUMN customer_id INT NULL;
 -- ALTER TABLE appointments ADD COLUMN walkin_name VARCHAR(200) NULL AFTER customer_id;
+
+-- ------------------------------------------------------------
+-- 7. REVIEWS (Değerlendirmeler)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS reviews (
+    id                INT            AUTO_INCREMENT PRIMARY KEY,
+    appointment_id    INT            NOT NULL UNIQUE,
+    shop_id           INT            NOT NULL,
+    customer_id       INT            NOT NULL,
+    rating            TINYINT        NOT NULL CHECK(rating >= 1 AND rating <= 5),
+    comment           TEXT           NULL,
+    created_at        DATETIME       DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE,
+    FOREIGN KEY (shop_id)     REFERENCES shops(id)     ON DELETE CASCADE,
+    FOREIGN KEY (customer_id) REFERENCES users(id)     ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
