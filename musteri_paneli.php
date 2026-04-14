@@ -23,7 +23,7 @@ $activeNav = ($page === 'berber_detay') ? 'kesfet' : $page;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MÃ¼ÅŸteri Paneli â€” Berber Randevu</title>
+    <title>Müşteri Paneli — Berber Randevu</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -65,9 +65,7 @@ $activeNav = ($page === 'berber_detay') ? 'kesfet' : $page;
     </style>
 </head>
 <body class="bg-surface font-body text-on-background min-h-screen flex flex-col relative overflow-x-hidden">
-<div class="fixed inset-0 ink-texture z-0"></div>
-
-<header class="bg-[#fefee5] w-full border-b-2 border-black sticky top-0 z-50">
+<div class="fixed inset-0 ink-texture z-0"></div><header class="bg-[#fefee5] w-full border-b-2 border-black sticky top-0 z-50">
     <nav class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto font-['Plus_Jakarta_Sans'] tracking-tight">
         <div class="flex items-center gap-4">
             <button id="hamburgerBtn" class="md:hidden p-2 border-2 border-black rounded-lg hover:bg-black hover:text-white transition-colors">
@@ -123,11 +121,11 @@ $activeNav = ($page === 'berber_detay') ? 'kesfet' : $page;
     <div class="flex flex-col md:flex-row justify-between items-center w-full px-8 py-10 gap-6 max-w-screen-2xl mx-auto font-['Work_Sans'] text-sm uppercase tracking-widest">
         <div class="font-black text-black text-lg italic tracking-tighter">Berber Defteri</div>
         <div class="flex flex-wrap justify-center gap-8 font-medium">
-            <a class="text-stone-500 hover:text-black hover:underline transition-colors block" href="#">HakkÄ±mÄ±zda</a>
+            <a class="text-stone-500 hover:text-black hover:underline transition-colors block" href="#">Hakkımızda</a>
             <a class="text-stone-500 hover:text-black hover:underline transition-colors block" href="#">S.S.S.</a>
         </div>
         <div class="text-stone-500 text-xs normal-case tracking-normal">
-            Â© 2024 Berber Defteri. El Ã§izimi ile Ã¶zenle hazÄ±rlanmÄ±ÅŸtÄ±r.
+            © 2024 Berber Defteri. El çizimi ile özenle hazırlanmıştır.
         </div>
     </div>
 </footer>

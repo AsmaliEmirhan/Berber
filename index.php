@@ -134,7 +134,7 @@ $role = $_GET['role'] ?? 'musteri';
 <?php elseif ($view === 'login'): ?>
 <!-- ================== LOGIN VIEW ================== -->
 <header class="w-full flex p-6 absolute top-0 left-0 z-50">
-    <a href="?view=landing" class="text-black font-bold uppercase tracking-widest text-sm flex items-center gap-2 hover:text-secondary transition-colors"><span class="material-symbols-outlined">arrow_back</span> Ana Səhifə</a>
+    <a href="?view=landing" class="text-black font-bold uppercase tracking-widest text-sm flex items-center gap-2 hover:text-secondary transition-colors"><span class="material-symbols-outlined">arrow_back</span> ANA SAYFA</a>
 </header>
 <main class="flex-grow flex flex-col items-center justify-center px-6 relative z-10 w-full h-full">
     <div class="absolute top-20 left-10 md:left-24 opacity-20 -rotate-12 select-none pointer-events-none"><span class="material-symbols-outlined text-[120px]" data-icon="content_cut">content_cut</span></div>
@@ -304,6 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
 
     function toggleMenu() {
+        if (!mobileMenu) return;
         mobileMenu.classList.toggle('-translate-x-full');
         mobileMenuOverlay.classList.toggle('hidden');
         setTimeout(() => mobileMenuOverlay.classList.toggle('opacity-0'), 10);

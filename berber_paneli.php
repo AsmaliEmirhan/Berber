@@ -35,7 +35,7 @@ foreach ($ownedShops as $s) {
 }
 foreach ($employedShops as $s) {
     if (!isset($allShops[$s['id']])) {
-        $s['_role'] = 'Ã‡alÄ±ÅŸan';
+        $s['_role'] = 'Çalışan';
         $allShops[$s['id']] = $s;
     }
 }
@@ -56,7 +56,7 @@ $allowedPages = ['dashboard', 'dukkan', 'hizmetler', 'calisanlar', 'randevular',
 $page = in_array($_GET['page'] ?? '', $allowedPages) ? $_GET['page'] : 'dashboard';
 
 // Enforce Employee Restrictions
-if ($userRoleInShop === 'Ã‡alÄ±ÅŸan') {
+if ($userRoleInShop === 'Çalışan') {
     $restricted = ['istatistik', 'dukkan', 'calisanlar', 'yorumlar'];
     if (in_array($page, $restricted)) {
         $page = 'dashboard';
@@ -75,7 +75,7 @@ if ($shop) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Berber Paneli â€” Berber Randevu</title>
+    <title>Berber Paneli — Berber Randevu</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Work+Sans:wght@100..900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -111,17 +111,13 @@ if ($shop) {
         .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(2px); z-index:999; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
         .modal-backdrop.open { opacity:1; pointer-events:auto; }
         .modal-box { background:#fefee5; border:3px solid #000; box-shadow:6px 6px 0px #000; border-radius:12px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto; transform:rotate(-1deg); }
-
-        /* Mobile Menu */
-        #mobileMenu { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; background: #fefee5; border-right: 4px solid #000; z-index: 1000; transform: translateX(-100%); transition: transform 0.3s ease-in-out; }
-        #mobileMenu.open { transform: translateX(0); }
-        #mobileMenuOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
-        #mobileMenuOverlay.show { display: block; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body class="bg-surface text-on-background font-body selection:bg-secondary-container min-h-screen flex flex-col relative">
-<div class="fixed inset-0 ink-texture z-0"><<!-- TopNavBar -->
+<div class="fixed inset-0 ink-texture z-0"></div>
+
+<!-- TopNavBar -->
 <nav class="bg-[#fefee5] w-full border-b-2 border-black sticky top-0 z-50">
     <div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto font-['Plus_Jakarta_Sans'] tracking-tight">
         <div class="flex items-center gap-4">
@@ -133,21 +129,21 @@ if ($shop) {
             </a>
         </div>
         
-        <!-- Desktop Navbar Links -->
+        <!-- Navbar Butonları -->
         <div class="hidden lg:flex items-center space-x-6">
             <a href="?page=dashboard" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='dashboard'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">Panel</a>
             
-            <?php if ($userRoleInShop !== 'Ã‡alÄ±ÅŸan'): ?>
-                <a href="?page=dukkan" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='dukkan'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">DÃ¼kkan</a>
+            <?php if ($userRoleInShop !== 'Çalışan'): ?>
+                <a href="?page=dukkan" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='dukkan'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">Dükkan</a>
             <?php endif; ?>
 
             <a href="?page=hizmetler" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='hizmetler'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">Hizmetler</a>
             
-            <?php if ($userRoleInShop !== 'Ã‡alÄ±ÅŸan'): ?>
+            <?php if ($userRoleInShop !== 'Çalışan'): ?>
                 <?php if ($user['is_plus']): ?>
-                <a href="?page=calisanlar" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='calisanlar'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">Ã‡alÄ±ÅŸanlar</a>
+                <a href="?page=calisanlar" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='calisanlar'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">Çalışanlar</a>
                 <?php else: ?>
-                <div title="Sadece Plus Ãœyelerine Ã–zel" class="relative text-stone-400 font-black pb-1 cursor-not-allowed">Ã‡alÄ±ÅŸanlar â­</div>
+                <div title="Sadece Plus Üyelerine Özel" class="relative text-stone-400 font-black pb-1 cursor-not-allowed">Çalışanlar ⭐</div>
                 <?php endif; ?>
             <?php endif; ?>
             
@@ -158,23 +154,23 @@ if ($shop) {
                 <?php endif; ?>
             </a>
 
-            <?php if ($userRoleInShop !== 'Ã‡alÄ±ÅŸan'): ?>
+            <?php if ($userRoleInShop !== 'Çalışan'): ?>
                 <a href="?page=yorumlar" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='yorumlar'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">Yorumlar</a>
 
                 <?php if ($user['is_plus']): ?>
-                <a href="?page=istatistik" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='istatistik'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">Ä°statistikler</a>
+                <a href="?page=istatistik" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='istatistik'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">İstatistikler</a>
                 <?php else: ?>
-                <div title="Sadece Plus Ãœyelerine Ã–zel" class="relative text-stone-400 font-black pb-1 cursor-not-allowed">Ä°statistikler â­</div>
+                <div title="Sadece Plus Üyelerine Özel" class="relative text-stone-400 font-black pb-1 cursor-not-allowed">İstatistikler ⭐</div>
                 <?php endif; ?>
 
                 <?php if ($user['is_plus']): ?>
-                <a href="?page=analiz" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='analiz'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">YÃ¼z YÃ¼ze</a>
+                <a href="?page=analiz" class="relative text-black font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='analiz'?'border-black':'border-transparent hover:border-black/50 text-stone-600' ?>">Yüz Yüze</a>
                 <?php endif; ?>
             <?php endif; ?>
 
-            <?php if ($userRoleInShop !== 'Ã‡alÄ±ÅŸan'): ?>
+            <?php if ($userRoleInShop !== 'Çalışan'): ?>
             <a href="?page=plus" class="relative font-black pb-1 hover:-translate-y-0.5 transition-transform border-b-4 <?= $page==='plus' ? 'border-secondary text-secondary' : ($user['is_plus'] ? 'border-transparent text-secondary hover:border-secondary/50' : 'border-transparent text-stone-600 hover:border-black/50') ?>">
-                <?= $user['is_plus'] ? 'â­ Plus' : 'â­ Plus\'a GeÃ§' ?>
+                <?= $user['is_plus'] ? '⭐ Plus' : '⭐ Plus\'a Geç' ?>
             </a>
             <?php endif; ?>
         </div>
@@ -190,72 +186,61 @@ if ($shop) {
                         <?php endforeach; ?>
                     </select>
                     <span class="text-[10px] font-bold tracking-widest <?= $userRoleInShop === 'Patron' ? 'text-secondary' : 'text-stone-500' ?>">
-                        Ãœnvan: <?= $userRoleInShop ?>
+                        Ünvan: <?= $userRoleInShop ?>
                     </span>
                 </div>
             <?php endif; ?>
-            <a href="logout.php" class="bg-black text-white px-4 md:px-6 py-2 hand-drawn-border font-bold hover:-translate-y-0.5 active:scale-95 transition-all text-sm uppercase">Ã‡Ä±kÄ±ÅŸ</a>
+            <a href="logout.php" class="bg-black text-white px-6 py-2 hand-drawn-border font-bold hover:-translate-y-0.5 active:scale-95 transition-all text-sm uppercase">Çıkış Yap</a>
         </div>
     </div>
 </nav>
 
-<!-- Mobile Dropdown Menu (Drawer) -->
-<div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-[998] hidden opacity-0 transition-opacity duration-300"></div>
-<div id="mobileMenu" class="fixed top-0 left-0 h-full w-[80%] max-w-[300px] bg-[#fefee5] border-r-4 border-black z-[999] -translate-x-full transition-transform duration-300 flex flex-col">
-    <div class="p-6 border-b-2 border-black flex justify-between items-center">
-        <span class="font-headline font-black text-xl italic">NAVIGASYON</span>
-        <button id="closeMenuBtn" class="text-2xl font-bold">&times;</button>
+<!-- Mobile Navigation Menu -->
+<div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-[100] hidden opacity-0 transition-opacity duration-300"></div>
+<aside id="mobileMenu" class="fixed top-0 left-0 bottom-0 w-[280px] bg-surface z-[101] border-r-4 border-black -translate-x-full transition-transform duration-300 ease-in-out p-6 flex flex-col">
+    <div class="flex justify-between items-center mb-10">
+        <img src="assets/img/logo.png" alt="Logo" class="h-12 w-auto">
+        <button id="closeMenuBtn" class="p-2 border-2 border-black rounded-lg">
+            <span class="material-symbols-outlined">close</span>
+        </button>
     </div>
-    <div class="flex-grow overflow-y-auto p-4 flex flex-col gap-2">
-        <?php if (!empty($allShops)): ?>
-            <div class="sm:hidden mb-4 p-4 border-2 border-black bg-surface-container-low rounded-xl">
-                <p class="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-50">DÃ¼kkan DeÄŸiÅŸtir</p>
-                <select class="w-full bg-transparent font-black text-sm uppercase outline-none" onchange="switchActiveShop(this.value)">
-                    <?php foreach($allShops as $s): ?>
-                        <option value="<?= $s['id'] ?>" <?= $shop && $shop['id'] == $s['id'] ? 'selected' : '' ?>><?= htmlspecialchars(mb_strtoupper($s['shop_name'])) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-        <?php endif; ?>
-
-        <a href="?page=dashboard" class="p-4 font-black flex items-center gap-3 border-2 border-transparent hover:border-black hover:bg-surface-container transition-all <?= $page==='dashboard'?'bg-black text-white':'' ?>">
-            <span class="material-symbols-outlined">dashboard</span> Panel
-        </a>
-        <?php if ($userRoleInShop !== 'Ã‡alÄ±ÅŸan'): ?>
-            <a href="?page=dukkan" class="p-4 font-black flex items-center gap-3 border-2 border-transparent hover:border-black hover:bg-surface-container transition-all <?= $page==='dukkan'?'bg-black text-white':'' ?>">
-                <span class="material-symbols-outlined">storefront</span> DÃ¼kkan
+    <div class="flex-grow overflow-y-auto">
+        <nav class="flex flex-col gap-4 font-headline">
+            <a href="?page=dashboard" class="p-3 font-black italic border-b-2 border-black/10 hover:border-black transition-colors flex items-center gap-3 <?= $page==='dashboard'?'text-secondary border-secondary':'' ?>">
+                <span class="material-symbols-outlined">dashboard</span> Panel
             </a>
-        <?php endif; ?>
-        <a href="?page=hizmetler" class="p-4 font-black flex items-center gap-3 border-2 border-transparent hover:border-black hover:bg-surface-container transition-all <?= $page==='hizmetler'?'bg-black text-white':'' ?>">
-            <span class="material-symbols-outlined">content_cut</span> Hizmetler
-        </a>
-        <a href="?page=randevular" class="p-4 font-black flex items-center gap-3 border-2 border-transparent hover:border-black hover:bg-surface-container transition-all <?= $page==='randevular'?'bg-black text-white':'' ?>">
-            <span class="material-symbols-outlined">calendar_month</span> Randevular
-        </a>
-        <?php if ($userRoleInShop !== 'Ã‡alÄ±ÅŸan'): ?>
-            <a href="?page=yorumlar" class="p-4 font-black flex items-center gap-3 border-2 border-transparent hover:border-black hover:bg-surface-container transition-all <?= $page==='yorumlar'?'bg-black text-white':'' ?>">
-                <span class="material-symbols-outlined">reviews</span> Yorumlar
-            </a>
-            <?php if ($user['is_plus']): ?>
-                <a href="?page=calisanlar" class="p-4 font-black flex items-center gap-3 border-2 border-transparent hover:border-black hover:bg-surface-container transition-all <?= $page==='calisanlar'?'bg-black text-white':'' ?>">
-                    <span class="material-symbols-outlined">badge</span> Ã‡alÄ±ÅŸanlar
-                </a>
-                <a href="?page=istatistik" class="p-4 font-black flex items-center gap-3 border-2 border-transparent hover:border-black hover:bg-surface-container transition-all <?= $page==='istatistik'?'bg-black text-white':'' ?>">
-                    <span class="material-symbols-outlined">analytics</span> Ä°statistikler
-                </a>
-                <a href="?page=analiz" class="p-4 font-black flex items-center gap-3 border-2 border-transparent hover:border-black hover:bg-surface-container transition-all <?= $page==='analiz'?'bg-black text-white':'' ?>">
-                    <span class="material-symbols-outlined">monitoring</span> YÃ¼z YÃ¼ze
+            <?php if ($userRoleInShop !== 'Çalışan'): ?>
+                <a href="?page=dukkan" class="p-3 font-black italic border-b-2 border-black/10 hover:border-black transition-colors flex items-center gap-3 <?= $page==='dukkan'?'text-secondary border-secondary':'' ?>">
+                    <span class="material-symbols-outlined">storefront</span> Dükkan
                 </a>
             <?php endif; ?>
-            <a href="?page=plus" class="p-4 font-black flex items-center gap-3 border-2 border-transparent hover:border-black hover:bg-surface-container transition-all <?= $page==='plus'?'bg-secondary text-white':'text-secondary' ?>">
-                <span class="material-symbols-outlined">star</span> <?= $user['is_plus'] ? 'Plus Ãœye' : 'Plus\'a GeÃ§' ?>
+            <a href="?page=hizmetler" class="p-3 font-black italic border-b-2 border-black/10 hover:border-black transition-colors flex items-center gap-3 <?= $page==='hizmetler'?'text-secondary border-secondary':'' ?>">
+                <span class="material-symbols-outlined">content_cut</span> Hizmetler
             </a>
-        <?php endif; ?>
+            <a href="?page=randevular" class="p-3 font-black italic border-b-2 border-black/10 hover:border-black transition-colors flex items-center gap-3 <?= $page==='randevular'?'text-secondary border-secondary':'' ?>">
+                <span class="material-symbols-outlined">calendar_month</span> Randevular
+            </a>
+            <?php if ($userRoleInShop !== 'Çalışan'): ?>
+                <a href="?page=yorumlar" class="p-3 font-black italic border-b-2 border-black/10 hover:border-black transition-colors flex items-center gap-3 <?= $page==='yorumlar'?'text-secondary border-secondary':'' ?>">
+                    <span class="material-symbols-outlined">reviews</span> Yorumlar
+                </a>
+                <?php if ($user['is_plus']): ?>
+                    <a href="?page=calisanlar" class="p-3 font-black italic border-b-2 border-black/10 hover:border-black transition-colors flex items-center gap-3 <?= $page==='calisanlar'?'text-secondary border-secondary':'' ?>">
+                        <span class="material-symbols-outlined">badge</span> Çalışanlar
+                    </a>
+                    <a href="?page=istatistik" class="p-3 font-black italic border-b-2 border-black/10 hover:border-black transition-colors flex items-center gap-3 <?= $page==='istatistik'?'text-secondary border-secondary':'' ?>">
+                        <span class="material-symbols-outlined">analytics</span> İstatistikler
+                    </a>
+                <?php endif; ?>
+            <?php endif; ?>
+        </nav>
     </div>
-    <div class="p-6 border-t-2 border-black">
-        <a href="logout.php" class="block w-full text-center bg-black text-white py-3 font-bold uppercase sketch-border">Çıkış Yap</a>
+    <div class="mt-auto pt-6 border-t-2 border-black/10">
+        <a href="logout.php" class="flex items-center justify-center gap-3 w-full bg-black text-white py-4 font-black italic uppercase sketch-border hover:bg-error transition-colors">
+            <span class="material-symbols-outlined">logout</span> Çıkış Yap
+        </a>
     </div>
-</div>
+</aside>
 
 <main class="flex-grow w-full relative z-10 py-6">
     <?php include __DIR__ . "/berber/{$page}.php"; ?>
@@ -265,10 +250,10 @@ if ($shop) {
     <div class="flex flex-col md:flex-row justify-between items-center w-full px-8 py-10 gap-6 font-['Work_Sans'] text-sm uppercase tracking-widest max-w-screen-2xl mx-auto">
         <div class="font-black text-black text-lg">Berber Randevu</div>
         <div class="flex flex-wrap justify-center gap-6">
-            <a class="text-stone-500 hover:text-black hover:italic transition-colors" href="#">HakkÄ±mÄ±zda</a>
-            <a class="text-stone-500 hover:text-black hover:italic transition-colors" href="#">DesteÄŸe UlaÅŸÄ±n</a>
+            <a class="text-stone-500 hover:text-black hover:italic transition-colors" href="#">Hakkımızda</a>
+            <a class="text-stone-500 hover:text-black hover:italic transition-colors" href="#">Desteğe Ulaşın</a>
         </div>
-        <div class="text-black">Â© 2024 Berber YÃ¶netim Paneli</div>
+        <div class="text-black">© 2024 Berber Yönetim Paneli</div>
     </div>
 </footer>
 
@@ -300,32 +285,22 @@ async function switchActiveShop(shopId) {
 }
 
 // Mobile Menu Logic
-const hamburgerBtn = document.getElementById('hamburgerBtn');
+const mobileMenuBtn = document.getElementById('hamburgerBtn');
 const closeMenuBtn = document.getElementById('closeMenuBtn');
 const mobileMenu = document.getElementById('mobileMenu');
 const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
 
-function openMenu() {
-    mobileMenu.classList.remove('-translate-x-full');
-    mobileMenuOverlay.classList.remove('hidden');
-    setTimeout(() => {
-        mobileMenuOverlay.classList.add('opacity-100');
-    }, 10);
-    document.body.style.overflow = 'hidden';
+function toggleMenu() {
+    if (!mobileMenu) return;
+    mobileMenu.classList.toggle('-translate-x-full');
+    mobileMenuOverlay.classList.toggle('hidden');
+    setTimeout(() => mobileMenuOverlay.classList.toggle('opacity-0'), 10);
+    document.body.style.overflow = mobileMenu.classList.contains('-translate-x-full') ? '' : 'hidden';
 }
 
-function closeMenu() {
-    mobileMenu.classList.add('-translate-x-full');
-    mobileMenuOverlay.classList.remove('opacity-100');
-    setTimeout(() => {
-        mobileMenuOverlay.classList.add('hidden');
-    }, 300);
-    document.body.style.overflow = '';
-}
-
-if(hamburgerBtn) hamburgerBtn.onclick = openMenu;
-if(closeMenuBtn) closeMenuBtn.onclick = closeMenu;
-if(mobileMenuOverlay) mobileMenuOverlay.onclick = closeMenu;
+if(mobileMenuBtn) mobileMenuBtn.onclick = toggleMenu;
+if(closeMenuBtn) closeMenuBtn.onclick = toggleMenu;
+if(mobileMenuOverlay) mobileMenuOverlay.onclick = toggleMenu;
 </script>
 </body>
 </html>
