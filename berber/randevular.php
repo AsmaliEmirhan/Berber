@@ -118,7 +118,14 @@ if (!$shop):
                     $statusBg = 'bg-surface-container-highest text-stone-500';
                     $statusLbl = 'BİLİNMİYOR';
                     if ($a['status'] === 'bekliyor') { $statusBg = 'bg-[#fefee5] border-[#fbbf24] text-[#d97706]'; $statusLbl = 'BEKLİYOR'; }
-                    else if ($a['status'] === 'onaylandi') { $statusBg = 'bg-[#3b82f6]/10 border-[#3b82f6] text-[#3b82f6]'; $statusLbl = 'İŞLEM YAPILIYOR'; }
+                    else if ($a['status'] === 'onaylandi') { 
+                        $statusBg = 'bg-[#3b82f6]/10 border-[#3b82f6] text-[#3b82f6]';
+                        if (time() >= strtotime($a['appointment_time'])) {
+                            $statusLbl = 'İŞLEM YAPILIYOR'; 
+                        } else {
+                            $statusLbl = 'KABUL EDİLDİ';
+                        }
+                    }
                     else if ($a['status'] === 'tamamlandi') { $statusBg = 'bg-secondary text-white border-black'; $statusLbl = 'TAMAMLANDI'; }
                     else if ($a['status'] === 'iptal') { $statusBg = 'bg-error text-white border-transparent'; $statusLbl = 'İPTAL'; }
 
@@ -170,7 +177,9 @@ if (!$shop):
                                     onclick="updateAppStatus(<?= $a['id'] ?>, 'iptal')">✕ REDDET</button>
                             </div>
                             <?php elseif ($a['status'] === 'onaylandi'): ?>
-                            <span class="text-[#3b82f6] font-bold uppercase text-xs animate-pulse">İşlem Yapılıyor...</span>
+                            <span class="text-[#3b82f6] font-bold uppercase text-xs <?= time() >= strtotime($a['appointment_time']) ? 'animate-pulse' : '' ?>">
+                                <?= time() >= strtotime($a['appointment_time']) ? 'İşlem Yapılıyor...' : 'Kabul Edildi' ?>
+                            </span>
                             <?php elseif ($a['status'] === 'tamamlandi'): ?>
                             <span class="text-stone-400 font-bold uppercase text-xs">Tamamlandı</span>
                             <?php else: ?>

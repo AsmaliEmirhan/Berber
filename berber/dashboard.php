@@ -246,9 +246,19 @@ if (!$shop): ?>
                         <tr><td colspan="4" class="px-6 py-8 text-center font-bold opacity-50">Kayıt Bulunamadı.</td></tr>
                         <?php else: foreach ($recent as $r): 
                             $statusBg = 'bg-surface-container-low text-stone-500';
-                            if ($r['status'] === 'bekliyor') $statusBg = 'bg-[#fefee5] border-secondary text-secondary';
-                            else if ($r['status'] === 'tamamlandi') $statusBg = 'bg-secondary text-white';
-                            else if ($r['status'] === 'iptal') $statusBg = 'bg-error text-white';
+                            $statusLbl = mb_strtoupper($r['status']);
+                            
+                            if ($r['status'] === 'bekliyor') { $statusBg = 'bg-[#fefee5] border-secondary text-secondary'; $statusLbl = 'BEKLİYOR'; }
+                            else if ($r['status'] === 'onaylandi') {
+                                $statusBg = 'bg-[#3b82f6]/10 border-[#3b82f6] text-[#3b82f6]';
+                                if (time() >= strtotime($r['appointment_time'])) {
+                                    $statusLbl = 'İŞLEMDE';
+                                } else {
+                                    $statusLbl = 'KABUL EDİLDİ';
+                                }
+                            }
+                            else if ($r['status'] === 'tamamlandi') { $statusBg = 'bg-secondary text-white border-transparent'; $statusLbl = 'TAMAMLANDI'; }
+                            else if ($r['status'] === 'iptal') { $statusBg = 'bg-error text-white border-transparent'; $statusLbl = 'İPTAL'; }
                         ?>
                         <tr class="hover:bg-surface-container-lowest transition-colors">
                             <td class="px-6 py-4 font-bold"><?= htmlspecialchars($r['customer_name']) ?></td>
@@ -256,7 +266,7 @@ if (!$shop): ?>
                             <td class="px-6 py-4 font-medium italic"><?= date('d M, H:i', strtotime($r['appointment_time'])) ?></td>
                             <td class="px-6 py-4 text-center">
                                 <span class="px-3 py-1 border-2 border-black rounded text-xs font-black uppercase tracking-widest <?= $statusBg ?>">
-                                    <?= $r['status'] ?>
+                                    <?= $statusLbl ?>
                                 </span>
                             </td>
                         </tr>
