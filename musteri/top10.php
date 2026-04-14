@@ -41,11 +41,30 @@ $stmt = $pdo->prepare($top10Sql);
 $stmt->execute($params);
 $topShops = $stmt->fetchAll();
 
-$title = "";
+$title = "Türkiye Geneli Top 10";
 if ($filterCity) {
-    $title = "Şehrin En İyi 10'u";
-} else {
-    $title = "Türkiye Geneli Top 10";
+    $cityName = '';
+    foreach($cities as $c) {
+        if((int)$c['id'] === $filterCity) {
+            $cityName = mb_strtoupper($c['name']);
+            break;
+        }
+    }
+    
+    $title = $cityName . " İLİ EN İYİ 10";
+    
+    if ($filterDistrict) {
+        $districtName = '';
+        foreach($districts as $d) {
+            if((int)$d['id'] === $filterDistrict) {
+                $districtName = mb_strtoupper($d['name']);
+                break;
+            }
+        }
+        if ($districtName) {
+            $title = $districtName . " İLÇESİ EN İYİ 10 (" . $cityName . ")";
+        }
+    }
 }
 ?>
 <div class="max-w-screen-xl mx-auto px-6 py-12 relative">
@@ -58,7 +77,7 @@ if ($filterCity) {
         <form method="GET" action="musteri_paneli.php" class="flex flex-wrap gap-4 items-center bg-surface-container-highest p-4 rounded-xl border-2 border-black w-full md:w-auto">
             <input type="hidden" name="page" value="top10">
             
-            <select name="city" id="top10CitySelect" onchange="this.form.district.value=''; this.form.submit()" class="bg-white border-2 border-black rounded-lg px-4 py-2 font-headline font-bold focus:outline-none focus:border-secondary transition-colors appearance-none pr-8">
+            <select name="city" id="top10CitySelect" onchange="if(this.form.district) { this.form.district.value=''; } this.form.submit();" class="bg-white border-2 border-black rounded-lg px-4 py-2 font-headline font-bold focus:outline-none focus:border-secondary transition-colors appearance-none pr-8">
                 <option value="">TÜRKİYE GENELİ</option>
                 <?php foreach ($cities as $c): ?>
                 <option value="<?= $c['id'] ?>" <?= $filterCity == $c['id'] ? 'selected' : '' ?>>
