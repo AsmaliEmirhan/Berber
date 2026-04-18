@@ -5,7 +5,8 @@ if ($userRoleInShop === 'Çalışan') {
     return;
 }
 
-$isNew = isset($_GET['new']);
+// Dükkanı olmayan kullanıcı için her zaman yeni dükkan modunda aç
+$isNew = isset($_GET['new']) || !$shop;
 $displayShop = $isNew ? null : $shop;
 
 $cities = $pdo->query('SELECT id, name FROM cities ORDER BY name')->fetchAll();

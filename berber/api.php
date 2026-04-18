@@ -84,12 +84,19 @@ function saveShop(PDO $pdo, int $userId): void {
 
     if (!$name) respond(false, 'Dükkan adı zorunludur.');
 
-    if ($isNew) {
+    // Kullanıcının hiç aktif dükkanı yoksa bu ilk dükkanıdır — is_new olarak işle
+    $hasNoActiveShop = empty($_SESSION['active_shop_id']);
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM shops WHERE owner_id = ?');
+    $stmt->execute([$userId]);
+    $ownedShopCount = (int)$stmt->fetchColumn();
+
+    if ($isNew || ($hasNoActiveShop && $ownedShopCount === 0)) {
+        // Yeni dükkan oluştur ve kullanıcıyı Patron yap
         $stmt = $pdo->prepare('INSERT INTO shops (owner_id, shop_name, city_id, district_id, address) VALUES (?,?,?,?,?)');
         $stmt->execute([$userId, $name, $cityId, $districtId, $address]);
         $newShopId = (int)$pdo->lastInsertId();
         $_SESSION['active_shop_id'] = $newShopId;
-        respond(true, 'Yeni şube başarıyla oluşturuldu!', ['shop_id' => $newShopId]);
+        respond(true, 'Dükkan başarıyla oluşturuldu! Artık patronsunuz.', ['shop_id' => $newShopId]);
     } else {
         $shop = getActiveShopContext($pdo, $userId, true);
         if ($shop) {
